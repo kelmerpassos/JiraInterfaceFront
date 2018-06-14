@@ -1,0 +1,46 @@
+{
+  "name": "jirainterfacefront-end",
+  "version": "1.0.0",
+  "description": "Front-end to an interface to query Jira issues",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffersonvnunes/JiraInterfaceFront-End.git"
+  },
+  "keywords": [
+    "React",
+    "Redux",
+    "Jira",
+    "Issue"
+  ],
+  "author": "Jefferson Ventura Nunes",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.2.1",
+    "babel-loader": "^6.2.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.1.18",
+    "babel-preset-stage-1": "^6.1.18",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "lodash": "^3.10.1",
+    "react": "16.3.2",
+    "react-dom": "16.3.2",
+    "react-redux": "5.0.7",
+    "react-router-dom": "^4.2.2",
+    "redux": "4.0.0",
+    "redux-form": "^6.6.3",
+    "redux-promise": "^0.6.0"
+  },
+  "bugs": {
+    "url": "https://github.com/jeffersonvnunes/JiraInterfaceFront-End/issues"
+  },
+  "homepage": "https://github.com/jeffersonvnunes/JiraInterfaceFront-End#readme"
+}
