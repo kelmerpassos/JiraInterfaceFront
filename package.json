@@ -29,12 +29,15 @@
     "webpack-dev-server": "^1.14.0"
   },
   "dependencies": {
+    "@material-ui/core": "^1.2.1",
+    "@material-ui/icons": "^1.1.0",
     "axios": "^0.18.0",
     "lodash": "^3.10.1",
     "react": "16.3.2",
     "react-dom": "16.3.2",
     "react-redux": "5.0.7",
     "react-router-dom": "^4.2.2",
+    "react-swipeable-views": "^0.12.13",
     "redux": "4.0.0",
     "redux-form": "^6.6.3",
     "redux-promise": "^0.6.0"
