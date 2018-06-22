@@ -11,8 +11,7 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 
-import SprintIssues  from './sprint-issues';
-import BacklogIssues from "./backlog-issues";
+import ListIssues  from './list-issues';
 import Issue from "./issue";
 
 function TabContainer({ children, dir }) {
@@ -84,10 +83,14 @@ class Home extends Component {
                     onChangeIndex={this.handleChangeIndex}>
 
                     <TabContainer dir={theme.direction}>
-                        <SprintIssues/>
+                        <ListIssues
+                            fetchIssues="sprint"
+                        />
                     </TabContainer>
                     <TabContainer dir={theme.direction}>
-                        <BacklogIssues/>
+                        <ListIssues
+                            fetchIssues="backlog"
+                        />
                     </TabContainer>
                 </SwipeableViews>
 
