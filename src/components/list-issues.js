@@ -45,7 +45,6 @@ function getSorting(order, orderBy) {
         : (a, b) => (a[orderBy] < b[orderBy] ? -1 : 1);
 }
 
-
 class ListIssues extends Component{
 
     constructor(props) {
@@ -72,7 +71,13 @@ class ListIssues extends Component{
 
         if(fetchIssues){
             fetchIssues().then(response => {
-                const data = this.props.issues; //response.payload.data;
+                let data;
+                if(this.props.fetchIssues === "sprint"){
+                    data = this.props.sprint;
+                } else if (this.props.fetchIssues === "backlog"){
+                    data = this.props.backlog;
+                }
+
                 this.setState({ data });
             });
         }
@@ -117,6 +122,7 @@ class ListIssues extends Component{
         ];
 
        function renderIssues(){
+
             return data.sort(getSorting(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map( issue => {
@@ -134,18 +140,17 @@ class ListIssues extends Component{
                 });
         }
 
-
         return (
             <div>
                 <Toolbar>
                     <div className={classes.title}>
                         <Typography variant="title" id="tableTitle">
-                            Atividades na Sprint
+                            {this.props.title}
                         </Typography>
                     </div>
                     <div className={classes.spacer} />
-                    <Tooltip title="Filter list">
-                        <IconButton aria-label="Filter list">
+                    <Tooltip title="Filtro">
+                        <IconButton aria-label="Filtro">
                             <FilterListIcon />
                         </IconButton>
                     </Tooltip>
@@ -193,6 +198,7 @@ class ListIssues extends Component{
                         component="div"
                         count={data.length}
                         rowsPerPage={rowsPerPage}
+                        labelRowsPerPage="Itens por pagina:"
                         page={page}
                         backIconButtonProps={{
                             'aria-label': 'Previous Page',
@@ -212,18 +218,14 @@ class ListIssues extends Component{
 ListIssues.propTypes = {
     classes: PropTypes.object.isRequired,
     fetchIssues: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
 };
 
-function mapStateToProps(state) {
-    let resp = {};
+function mapStateToProps({sprint, backlog}) {
 
-    if(state.sprint.length > 0){
-        resp = state.sprint;
-    }else if(state.backlog.length > 0){
-        resp = state.backlog;
-    }
-
-    return { issues: resp};
+    return { sprint,
+        backlog
+    };
 }
 
 export default connect(mapStateToProps, { fetchSprintIssues, fetchBacklogIssues }) (withStyles(styles)(ListIssues));

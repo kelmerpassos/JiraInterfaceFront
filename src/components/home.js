@@ -85,11 +85,13 @@ class Home extends Component {
                     <TabContainer dir={theme.direction}>
                         <ListIssues
                             fetchIssues="sprint"
+                            title="Atividades na Sprint"
                         />
                     </TabContainer>
                     <TabContainer dir={theme.direction}>
                         <ListIssues
                             fetchIssues="backlog"
+                            title="Atividades no Backlog"
                         />
                     </TabContainer>
                 </SwipeableViews>
