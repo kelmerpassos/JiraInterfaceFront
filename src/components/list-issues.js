@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -15,7 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import TablePagination from '@material-ui/core/TablePagination';
-
+import FilterIssues from './filter-issues';
 import {connect} from "react-redux";
 import {fetchBacklogIssues, fetchSprintIssues} from "../actions";
 
@@ -57,20 +56,17 @@ class ListIssues extends Component{
             rowsPerPage: 10,
             data: [],
         };
-    }
-
-    componentDidMount(){
-
-        let fetchIssues = null;
 
         if(this.props.fetchIssues === "sprint"){
-            fetchIssues = this.props.fetchSprintIssues;
+            this.fetchIssues = this.props.fetchSprintIssues;
         } else if (this.props.fetchIssues === "backlog"){
-            fetchIssues = this.props.fetchBacklogIssues;
+            this.fetchIssues = this.props.fetchBacklogIssues;
         }
+    }
 
-        if(fetchIssues){
-            fetchIssues().then(response => {
+    handleUpdate = (jql = '') => {
+        if(this.fetchIssues){
+            this.fetchIssues(jql).then(response => {
                 let data;
                 if(this.props.fetchIssues === "sprint"){
                     data = this.props.sprint;
@@ -81,6 +77,10 @@ class ListIssues extends Component{
                 this.setState({ data });
             });
         }
+    };
+
+    componentDidMount(){
+        this.handleUpdate();
     }
 
     handleRequestSort = (event, property) => {
@@ -142,6 +142,11 @@ class ListIssues extends Component{
 
         return (
             <div>
+                <div>
+                    <FilterIssues
+                        onChangeFilter={this.handleUpdate}
+                    />
+                </div>
                 <Toolbar>
                     <div className={classes.title}>
                         <Typography variant="title" id="tableTitle">
@@ -149,11 +154,11 @@ class ListIssues extends Component{
                         </Typography>
                     </div>
                     <div className={classes.spacer} />
-                    <Tooltip title="Filtro">
-                        <IconButton aria-label="Filtro">
-                            <FilterListIcon />
-                        </IconButton>
-                    </Tooltip>
+                    {/*<Tooltip title="Filtro">*/}
+                        {/*<IconButton aria-label="Filtro">*/}
+                            {/*<FilterListIcon />*/}
+                        {/*</IconButton>*/}
+                    {/*</Tooltip>*/}
                 </Toolbar>
                 <Paper className={classes.root}>
                     <Table aria-labelledby="tableTitle">

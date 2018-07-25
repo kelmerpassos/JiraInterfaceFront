@@ -1,12 +1,18 @@
 import axios from 'axios';
 
 export const SPRINT_ISSUES = 'sprint_issues',
-             BACKLOG_ISSUES = 'backlog_issues';
+             BACKLOG_ISSUES = 'backlog_issues',
+             PROJECT_COMPONENTS = 'project_components';
 
 const ROOT_URL = "http://localhost:3000";
 
-export function fetchSprintIssues() {
-    const request = axios.get(`${ROOT_URL}/sprint`);
+const PROJECT_ID = 10000;
+
+export function fetchSprintIssues(filter) {
+
+    filter = filter ? `?jql=${filter}` : '';
+
+    const request = axios.get(`${ROOT_URL}/sprint${filter}`);
 
     return {
         type: SPRINT_ISSUES,
@@ -14,11 +20,23 @@ export function fetchSprintIssues() {
     };
 }
 
-export function fetchBacklogIssues() {
-    const request = axios.get(`${ROOT_URL}/issues`);
+export function fetchBacklogIssues(filter) {
+
+    filter = filter ? `?jql=${filter}` : '';
+
+    const request = axios.get(`${ROOT_URL}/issues${filter}`);
 
     return {
         type: BACKLOG_ISSUES,
+        payload: request
+    };
+}
+
+export function fetchProjectComponents() {
+    const request = axios.get(`${ROOT_URL}/project/${PROJECT_ID}/components`);
+
+    return {
+        type: PROJECT_COMPONENTS,
         payload: request
     };
 }
