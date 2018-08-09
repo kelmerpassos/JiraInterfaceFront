@@ -36,9 +36,14 @@ const styles = theme => ({
 
 class Home extends Component {
 
-    state = {
-        value: 0,
-    };
+    constructor(props){
+        super(props);
+        this.state = {
+            value: 0,
+            token: '',
+            authenticated: true,
+        };
+    }
 
     handleChange = (event, value) => {
         this.setState({ value });
@@ -48,22 +53,25 @@ class Home extends Component {
         this.setState({ value: index });
     };
 
-
     render (){
-        const { classes, theme } = this.props;
+        const { classes, theme, history } = this.props;
+
+        if (!this.state.authenticated){
+            history.push('/login');
+        }
 
         return (
             <div className={classes.root}>
-                <AppBar position="static">
-                    <Toolbar>
-                        <IconButton color="inherit" aria-label="Menu">
-                            <MenuIcon />
-                        </IconButton>
-                        {/*<Typography variant="title" color="inherit">*/}
-                        {/*Title*/}
-                        {/*</Typography>*/}
-                    </Toolbar>
-                </AppBar>
+                {/*<AppBar position="static">*/}
+                    {/*<Toolbar>*/}
+                        {/*<IconButton color="inherit" aria-label="Menu">*/}
+                            {/*<MenuIcon />*/}
+                        {/*</IconButton>*/}
+                        {/*/!*<Typography variant="title" color="inherit">*!/*/}
+                        {/*/!*Title*!/*/}
+                        {/*/!*</Typography>*!/*/}
+                    {/*</Toolbar>*/}
+                {/*</AppBar>*/}
                 <AppBar position="static" color="default">
                     <Tabs
                         value={this.state.value}

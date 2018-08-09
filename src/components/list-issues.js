@@ -119,6 +119,9 @@ class ListIssues extends Component{
             { id: 'issuetype', numeric: false, disablePadding: false, label: 'Tipo' },
             { id: 'status', numeric: false, disablePadding: false, label: 'Situação' },
             { id: 'summary', numeric: false, disablePadding: false, label: 'Resumo' },
+            { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão' },
+            { id: 'storyPoints', numeric: false, disablePadding: false, label: 'Pontos' },
+            { id: 'productOwner', numeric: false, disablePadding: false, label: 'Product Owner' },
         ];
 
        function renderIssues(){
@@ -135,6 +138,9 @@ class ListIssues extends Component{
                             <TableCell>{issue.issuetype}</TableCell>
                             <TableCell>{issue.status}</TableCell>
                             <TableCell>{issue.summary}</TableCell>
+                            <TableCell>{issue.groupFixVersions}</TableCell>
+                            <TableCell>{issue.storyPoints ? issue.storyPoints : ''}</TableCell>
+                            <TableCell>{issue.productOwner ? issue.productOwner : ''}</TableCell>
                         </TableRow>
                     );
                 });

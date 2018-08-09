@@ -29,7 +29,7 @@ class LoginForm extends Component {
                 <TextField
                     id="username"
                     label="Usuário"
-                    onChange = {(event,newValue) => this.setState({username:newValue})}
+                    //onChange = {(event,newValue) => this.setState({username:newValue})}
                     fullWidth
                 />
                 <br/>
@@ -37,7 +37,7 @@ class LoginForm extends Component {
                     id="password"
                     type="password"
                     label="Senha"
-                    onChange = {(event,newValue) => this.setState({password:newValue})}
+                    //onChange = {(event,newValue) => this.setState({password:newValue})}
                     fullWidth
                 />
                 <br/>
