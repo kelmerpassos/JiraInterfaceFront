@@ -14,7 +14,9 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import TablePagination from '@material-ui/core/TablePagination';
+import Modal from '@material-ui/core/Modal';
 import FilterIssues from './filter-issues';
+import Issue from './issue';
 import {connect} from "react-redux";
 import {fetchBacklogIssues, fetchSprintIssues} from "../actions";
 
@@ -36,6 +38,14 @@ const styles = theme => ({
     title: {
         flex: '0 0 auto',
     },
+    modal: {
+        position: 'absolute',
+        width: '80%',
+        height: '80%',
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: theme.shadows[5],
+        padding: theme.spacing.unit * 4,
+    },
 });
 
 function getSorting(order, orderBy) {
@@ -55,6 +65,8 @@ class ListIssues extends Component{
             page: 0,
             rowsPerPage: 10,
             data: [],
+            modalOpen: false,
+            modalIssue: null,
         };
 
         if(this.props.fetchIssues === "sprint"){
@@ -107,6 +119,24 @@ class ListIssues extends Component{
         this.setState({ rowsPerPage: event.target.value });
     };
 
+    handleModalOpen = (issue) => {
+        this.setState(
+            {
+                modalOpen: true,
+                modalIssue: issue
+            }
+        );
+    };
+
+    handleModalClose = () => {
+        this.setState(
+            {
+                modalOpen: false,
+                modalIssue: null
+            }
+        );
+    };
+
     render (){
 
         const { classes } = this.props;
@@ -124,13 +154,12 @@ class ListIssues extends Component{
             { id: 'productOwner', numeric: false, disablePadding: false, label: 'Product Owner' },
         ];
 
-       function renderIssues(){
-
+       function renderIssues(owner){
             return data.sort(getSorting(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map( issue => {
                     return(
-                        <TableRow key={issue.key}>
+                        <TableRow key={issue.key} onClick={(event) => owner.handleModalOpen(issue)}>
                             <TableCell component="th" scope="row">
                                 {issue.key}
                             </TableCell>
@@ -144,6 +173,17 @@ class ListIssues extends Component{
                         </TableRow>
                     );
                 });
+        }
+
+        function getModalStyle() {
+            const top = 50;
+            const left = 50;
+
+            return {
+                top: `${top}%`,
+                left: `${left}%`,
+                transform: `translate(-${top}%, -${left}%)`,
+            };
         }
 
         return (
@@ -197,7 +237,7 @@ class ListIssues extends Component{
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {renderIssues()}
+                            {renderIssues(this)}
                             {emptyRows > 0 && (
                                 <TableRow style={{ height: 49 * emptyRows }}>
                                     <TableCell colSpan={6} />
@@ -221,6 +261,19 @@ class ListIssues extends Component{
                         onChangeRowsPerPage={this.handleChangeRowsPerPage}
                     />
                 </Paper>
+                <Modal
+                    aria-labelledby="simple-modal-title"
+                    aria-describedby="simple-modal-description"
+                    open={this.state.modalOpen}
+                    onClose={this.handleModalClose}
+                >
+                    <div style={getModalStyle()} className={classes.modal}>
+                        <Issue
+                            issueObj={this.state.modalIssue}
+                        >
+                        </Issue>
+                    </div>
+                </Modal>
             </div>
         );
     }

@@ -2,7 +2,8 @@ import axios from 'axios';
 
 export const SPRINT_ISSUES = 'sprint_issues',
              BACKLOG_ISSUES = 'backlog_issues',
-             PROJECT_COMPONENTS = 'project_components';
+             PROJECT_COMPONENTS = 'project_components',
+             ISSUE = 'issue';
 
 const ROOT_URL = "http://localhost:3000";
 
@@ -37,6 +38,15 @@ export function fetchProjectComponents() {
 
     return {
         type: PROJECT_COMPONENTS,
+        payload: request
+    };
+}
+
+export function fetchIssue(key) {
+    const request = axios.get(`${ROOT_URL}/issues/${key}`);
+
+    return {
+        type: ISSUE,
         payload: request
     };
 }
