@@ -183,6 +183,7 @@ class ListIssues extends Component{
                 top: `${top}%`,
                 left: `${left}%`,
                 transform: `translate(-${top}%, -${left}%)`,
+                overflowY: 'auto',
             };
         }
 

@@ -10,10 +10,10 @@ import {withStyles} from "@material-ui/core";
 const styles = theme => ({
     root: {
         flexGrow: 1,
-        maxHeight: '100%',
-        overflowY: 'auto',
-        overflowX: 'hidden',
     },
+    fieldLabel: {
+        color: '#5e6c84'
+    }
 });
 
 class Issue extends Component {
@@ -38,77 +38,86 @@ class Issue extends Component {
     }
     
     render (){
-        const { classes, theme, issue } = this.props;
+        const { classes, theme } = this.props;
+        const { issue } = this.state;
 
         return (
             <div className={classes.root}>
                 <Grid container spacing={16}>
                     <Grid item xs={12}>
-                        <Typography variant="subheading" gutterBottom>
-                            {issue ? (issue.key +' - '+ issue.summary) : ''}
+                        <Typography variant="subheading">
+                            <strong className={classes.fieldLabel}>{issue? issue.key : ''}</strong> {issue? ' - ' + issue.summary : ''}
                         </Typography>
                     </Grid>
                     <Grid item xs={12}>
-                        <Grid container spacing={16}>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Prioridade:</b> {issue && issue.priority ? issue.priority : '' }
-                                </Typography>
+                        <Typography variant="body2">
+                            <Grid container alignItems={"center"}>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Prioridade:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.priority ? issue.priority : '' }
+                                </Grid>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Tipo:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.issuetype ? issue.issuetype : '' }
+                                </Grid>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Pontos:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.storyPoints ? issue.storyPoints : '' }
+                                </Grid>
                             </Grid>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Tipo:</b> {issue && issue.issuetype ? issue.issuetype : '' }
-                                </Typography>
+                            <Grid item xs={12} container>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Relator:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.creator ? issue.creator : '' }
+                                </Grid>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Status:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.status ? issue.status : '' }
+                                </Grid>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Product Owner:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.productOwner ? issue.productOwner : '' }
+                                </Grid>
                             </Grid>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Pontos:</b> {issue && issue.storyPoints ? issue.storyPoints : '' }
-                                </Typography>
+                            <Grid item xs={12} container>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Grupo:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.groupComponents ? issue.groupComponents : '' }
+                                </Grid>
+                                <Grid item md={2}>
+                                    <strong className={classes.fieldLabel}>Versão:</strong>
+                                </Grid>
+                                <Grid item md={2}>
+                                    {issue && issue.groupFixVersions ? issue.groupFixVersions : '' }
+                                </Grid>
                             </Grid>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Relator:</b> {issue && issue.creator ? issue.creator : '' }
-                                </Typography>
-                            </Grid>
-                        </Grid>
+                        </Typography>
                     </Grid>
                     <Grid item xs={12}>
-                        <Grid container spacing={16}>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Status:</b> {issue && issue.status ? issue.status : '' }
-                                </Typography>
+                        <Typography variant="body2">
+                            <Grid container spacing={16}>
+                                <Grid item md={8}>
+                                    <strong className={classes.fieldLabel}>Descrição:</strong> <span dangerouslySetInnerHTML={{__html: issue && issue.description ? issue.description : '' }}/>
+                                </Grid>
+                                <Grid item>
+                                    <strong className={classes.fieldLabel}>Anexos:</strong>
+                                </Grid>
                             </Grid>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Product Owner:</b> {issue && issue.productOwner ? issue.productOwner : '' }
-                                </Typography>
-                            </Grid>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Grupo:</b> {issue && issue.groupComponents ? issue.groupComponents : '' }
-                                </Typography>
-                            </Grid>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Versão:</b> {issue && issue.groupFixVersions ? issue.groupFixVersions : '' }
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Grid container spacing={16}>
-                            <Grid item md={8}>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Descrição:</b> {issue && issue.description ? issue.description : '' }
-                                </Typography>
-                            </Grid>
-                            <Grid item>
-                                <Typography variant="body2" gutterBottom>
-                                    <b>Anexos:</b>
-                                </Typography>
-                            </Grid>
-                        </Grid>
+                        </Typography>
                     </Grid>
                 </Grid>
             </div>
@@ -118,7 +127,7 @@ class Issue extends Component {
 
 Issue.propTypes = {
     classes: PropTypes.object.isRequired,
-    issue: PropTypes.object,
+    issueObj: PropTypes.object,
 };
 
 function mapStateToProps({issue}) {
