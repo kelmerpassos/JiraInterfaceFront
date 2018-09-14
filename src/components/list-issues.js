@@ -14,6 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import TablePagination from '@material-ui/core/TablePagination';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Modal from '@material-ui/core/Modal';
 import FilterIssues from './filter-issues';
 import Issue from './issue';
@@ -28,6 +29,14 @@ const styles = theme => ({
     },
     tableWrapper: {
         overflowX: 'auto',
+    },
+    tableRow: {
+        '&:nth-of-type(odd)': {
+            backgroundColor: theme.palette.background.default
+        }
+    },
+    progress: {
+        margin: theme.spacing.unit * 2,
     },
     spacer: {
         flex: '1 1 100%',
@@ -149,30 +158,31 @@ class ListIssues extends Component{
             { id: 'issuetype', numeric: false, disablePadding: false, label: 'Tipo' },
             { id: 'status', numeric: false, disablePadding: false, label: 'Situação' },
             { id: 'summary', numeric: false, disablePadding: false, label: 'Resumo' },
-            { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão' },
+            { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão de Liberação' },
             { id: 'storyPoints', numeric: false, disablePadding: false, label: 'Pontos' },
-            { id: 'productOwner', numeric: false, disablePadding: false, label: 'Product Owner' },
+            { id: 'priority', numeric: false, disablePadding: false, label: 'Prioridade' },
         ];
 
-       function renderIssues(owner){
+        function renderIssues(owner){
             return data.sort(getSorting(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map( issue => {
                     return(
-                        <TableRow key={issue.key} onClick={(event) => owner.handleModalOpen(issue)}>
+                        <TableRow hover className={classes.tableRow} key={issue.key} >
                             <TableCell component="th" scope="row">
-                                {issue.key}
+                                <a href={`/issue/${issue.key}`} target={'_blank'}> {issue.key}</a>
                             </TableCell>
-                            <TableCell>{issue.groupComponents}</TableCell>
-                            <TableCell>{issue.issuetype}</TableCell>
-                            <TableCell>{issue.status}</TableCell>
-                            <TableCell>{issue.summary}</TableCell>
-                            <TableCell>{issue.groupFixVersions}</TableCell>
-                            <TableCell>{issue.storyPoints ? issue.storyPoints : ''}</TableCell>
-                            <TableCell>{issue.productOwner ? issue.productOwner : ''}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupComponents}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.issuetype}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.status}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.summary}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupFixVersions}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.storyPoints ? issue.storyPoints : ''}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.priority ? issue.priority : ''}</TableCell>
                         </TableRow>
                     );
-                });
+                }
+            );
         }
 
         function getModalStyle() {
@@ -240,8 +250,11 @@ class ListIssues extends Component{
                         <TableBody>
                             {renderIssues(this)}
                             {emptyRows > 0 && (
+
                                 <TableRow style={{ height: 49 * emptyRows }}>
-                                    <TableCell colSpan={6} />
+                                    <TableCell colSpan={6}>
+                                        <CircularProgress className={classes.progress} size={50} />
+                                    </TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

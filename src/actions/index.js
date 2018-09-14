@@ -3,7 +3,8 @@ import axios from 'axios';
 export const SPRINT_ISSUES = 'sprint_issues',
              BACKLOG_ISSUES = 'backlog_issues',
              PROJECT_COMPONENTS = 'project_components',
-             ISSUE = 'issue';
+             ISSUE = 'issue',
+             ISSUE_ATTACH = 'issue_attach';
 
 const ROOT_URL = "http://localhost:3000";
 
@@ -47,6 +48,18 @@ export function fetchIssue(key) {
 
     return {
         type: ISSUE,
+        payload: request
+    };
+}
+
+export function fetchAttachment(key, attach) {
+    const body = {
+          file: attach
+        },
+       request = axios.post(`${ROOT_URL}/issues/${key}/attachment`, body);
+
+    return {
+        type: ISSUE_ATTACH,
         payload: request
     };
 }

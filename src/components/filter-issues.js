@@ -63,7 +63,7 @@ class FilterIssues extends Component {
         this.state = {
             groups: [],
             selectedGroups: [],
-            resumo: ''
+            pesquisa: ''
         };
 
         this.filter = '';
@@ -71,7 +71,7 @@ class FilterIssues extends Component {
 
     handleFilterChange = event => {
         let filter = '',
-            resumo = '';
+            pesquisa = '';
 
         if(this.state.selectedGroups.length > 0){
             filter = this.state.selectedGroups.toString();
@@ -79,9 +79,9 @@ class FilterIssues extends Component {
 
         filter = filter !== '' ? `component in (${filter})` : '';
 
-        if(this.state.resumo.length > 2){
-            resumo = `text ~ "${this.state.resumo}"`;
-            filter = filter !== '' ? `${filter} and ${resumo}` : resumo;
+        if(this.state.pesquisa.length > 2){
+            pesquisa = `text ~ "${this.state.pesquisa}" or key = "${this.state.pesquisa}"`;
+            filter = filter !== '' ? `${filter} and ${pesquisa}` : pesquisa;
         }
 
         if(this.filter !== filter){
@@ -96,9 +96,9 @@ class FilterIssues extends Component {
         });
     };
 
-    handleResumoChange = event => {
+    handlePesquisaChange = event => {
         this.setState({
-            resumo: event.target.value,
+            pesquisa: event.target.value,
         });
     };
 
@@ -139,11 +139,11 @@ class FilterIssues extends Component {
                         </Grid>
                         <Grid item md={5}>
                             <TextField
-                                id="input-resumo"
-                                label="Resumo"
+                                id="input-pesquisa"
+                                label="Pesquisa"
                                 className={classes.textField}
-                                value={this.state.resumo}
-                                onChange={this.handleResumoChange}
+                                value={this.state.pesquisa}
+                                onChange={this.handlePesquisaChange}
                             />
                         </Grid>
                         <Grid item md={2}>
