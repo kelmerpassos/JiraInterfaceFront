@@ -29,7 +29,8 @@ class SelectComp extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if(prevProps.value.id !== this.state.value.id){
+        if(prevProps.value.id !== this.state.value.id ||
+           (prevProps.listValues ? prevProps.listValues.length: 0) !== (this.props.listValues ? this.props.listValues.length : 0)){
             const index = this.props.listValues ? this.props.listValues.findIndex(obj => obj.id === prevProps.value.id) : -1;
             this.setState({
                 index,

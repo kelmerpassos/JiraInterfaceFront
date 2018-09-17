@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from "prop-types";
 import {withStyles, MuiThemeProvider, createMuiTheme} from "@material-ui/core";
 import {connect} from "react-redux";
-import {fetchIssue, fetchAttachment, fetchPriorities} from "../actions";
+import {fetchIssue, fetchAttachment, fetchPriorities, updateIssue} from "../actions";
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -49,6 +49,7 @@ class Issue extends Component {
             issue : props.issueObj,
             priorities: props.priorities,
             hasChange: false,
+            saving: false,
         };
     }
 
@@ -76,7 +77,7 @@ class Issue extends Component {
     
     render (){
         const { classes, theme } = this.props;
-        const { issue, originalIssue, hasChange } = this.state;
+        const { issue, originalIssue, hasChange, saving } = this.state;
 
         function renderAnexos(callFunc, issue) {
             return !issue ? '' : issue.attachment.map( attach => {
@@ -107,7 +108,7 @@ class Issue extends Component {
                             <Grid container item sm={12} spacing={8}>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Prioridade:</strong>
+                                        <span className={classes.fieldLabel}>Prioridade:</span>
                                     </Grid>
                                     <Grid>
                                         { issue && issue.priority && (
@@ -129,22 +130,35 @@ class Issue extends Component {
                                     </Grid>
                                     <Grid>
                                         {
-                                            hasChange && (
+                                            hasChange && !saving && (
                                                 <MuiThemeProvider theme={themeButton}>
                                                     <Button className={classes.buttonIcon}
                                                             color="primary"
                                                             size="small"
                                                             onClick={ event => {
 
-                                                                //salvar
-
                                                                 this.setState({
-                                                                    hasChange: false
+                                                                    saving: true,
                                                                 });
 
-                                                                if(this.props.onIssueChange){
-                                                                    this.props.onIssueChange(this.state.issue);
-                                                                }
+                                                                this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
+                                                                    this.setState({
+                                                                        hasChange: false,
+                                                                        saving: false,
+                                                                        originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                    });
+
+                                                                    if(this.props.onIssueChange){
+                                                                        this.props.onIssueChange(this.state.issue);
+                                                                    }
+                                                                }).catch( error => {
+                                                                    this.setState({
+                                                                        saving: false,
+                                                                    });
+
+                                                                    console.log('Erro ao salvar', error);
+                                                                    alert('Não foi possível salvar as alterações.');
+                                                                });
                                                             }}>
                                                         <DoneIcon/>
                                                     </Button>
@@ -165,17 +179,22 @@ class Issue extends Component {
                                                 </MuiThemeProvider>
                                             )
                                         }
+                                        {
+                                            saving && (
+                                                <CircularProgress style={{marginLeft: '10px'}} size={24} />
+                                            )
+                                        }
                                     </Grid>
                                 </Grid>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Tipo:</strong>
+                                        <span className={classes.fieldLabel}>Tipo:</span>
                                         {issue && issue.issuetype ? ' ' + issue.issuetype : '' }
                                     </Grid>
                                 </Grid>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Pontos:</strong>
+                                        <span className={classes.fieldLabel}>Pontos:</span>
                                         {issue && issue.storyPoints ? ' ' + issue.storyPoints : '' }
                                     </Grid>
                                 </Grid>
@@ -183,19 +202,19 @@ class Issue extends Component {
                             <Grid item sm={12} container spacing={8}>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Relator:</strong>
+                                        <span className={classes.fieldLabel}>Relator:</span>
                                         {issue && issue.creator ? ' ' + issue.creator : '' }
                                     </Grid>
                                 </Grid>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Status:</strong>
+                                        <span className={classes.fieldLabel}>Status:</span>
                                         {issue && issue.status ? ' ' + issue.status : '' }
                                     </Grid>
                                 </Grid>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Product Owner:</strong>
+                                        <span className={classes.fieldLabel}>Product Owner:</span>
                                         {issue && issue.productOwner ? ' ' + issue.productOwner : '' }
                                     </Grid>
                                 </Grid>
@@ -203,19 +222,19 @@ class Issue extends Component {
                             <Grid item sm={12} container spacing={8}>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Grupo:</strong>
+                                        <span className={classes.fieldLabel}>Grupo:</span>
                                         {issue && issue.groupComponents ? ' ' + issue.groupComponents : '' }
                                     </Grid>
                                 </Grid>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>Versão de Liberação:</strong>
+                                        <span className={classes.fieldLabel}>Versão de Liberação:</span>
                                         {issue && issue.groupFixVersions ? ' ' + issue.groupFixVersions : '' }
                                     </Grid>
                                 </Grid>
                                 <Grid item md={4} sm={6} justify={"flex-start"} container>
                                     <Grid>
-                                        <strong className={classes.fieldLabel}>SAC:</strong>
+                                        <span className={classes.fieldLabel}>SAC:</span>
                                         {issue && issue.sac ? ' ' + issue.sac : '' }
                                     </Grid>
                                 </Grid>
@@ -236,17 +255,17 @@ class Issue extends Component {
                                     <Grid item md={8}>
                                         <Grid container spacing={8}>
                                             <Grid item sm={12}>
-                                                <strong className={classes.fieldLabel}>Solução/Teste:</strong>
+                                                <span className={classes.fieldLabel}>Solução/Teste:</span>
                                                 <span dangerouslySetInnerHTML={{__html: issue && issue.solution_test ? issue.solution_test : '' }}/>
                                             </Grid>
                                             <Grid item sm={12}>
-                                                <strong className={classes.fieldLabel}>Descrição:</strong>
+                                                <span className={classes.fieldLabel}>Descrição:</span>
                                                 <span dangerouslySetInnerHTML={{__html: issue && issue.description ? issue.description : '' }}/>
                                             </Grid>
                                         </Grid>
                                     </Grid>
                                     <Grid item md={4}>
-                                        <strong className={classes.fieldLabel}>Anexos:</strong>
+                                        <span className={classes.fieldLabel}>Anexos:</span>
                                         <Grid container spacing={8}>
                                             {
                                                 renderAnexos(this.props.fetchAttachment, issue)
@@ -273,4 +292,4 @@ function mapStateToProps({issue, priorities}) {
     return {issue, priorities};
 }
 
-export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorities}) (withStyles(styles, { withTheme: true })(Issue));
+export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorities, updateIssue}) (withStyles(styles, { withTheme: true })(Issue));

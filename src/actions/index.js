@@ -4,6 +4,7 @@ export const SPRINT_ISSUES = 'sprint_issues',
              BACKLOG_ISSUES = 'backlog_issues',
              PROJECT_COMPONENTS = 'project_components',
              ISSUE = 'issue',
+             ISSUE_UPDATE = 'issue_update',
              ISSUE_ATTACH = 'issue_attach',
              PRIORITIES = 'priorities';
 
@@ -49,6 +50,15 @@ export function fetchIssue(key) {
 
     return {
         type: ISSUE,
+        payload: request
+    };
+}
+
+export function updateIssue(key, issue) {
+    const request = axios.put(`${ROOT_URL}/issues/${key}`, issue);
+
+    return {
+        type: ISSUE_UPDATE,
         payload: request
     };
 }
