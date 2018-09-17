@@ -178,7 +178,7 @@ class ListIssues extends Component{
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.summary}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupFixVersions}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.storyPoints ? issue.storyPoints : ''}</TableCell>
-                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.priority ? issue.priority : ''}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.priority ? issue.priority.name : ''}</TableCell>
                         </TableRow>
                     );
                 }
@@ -284,6 +284,10 @@ class ListIssues extends Component{
                     <div style={getModalStyle()} className={classes.modal}>
                         <Issue
                             issueObj={this.state.modalIssue}
+                            onIssueChange={(issue) => {
+                                this.state.modalIssue.priority = issue.priority;
+                                this.setState({data});
+                            }}
                         >
                         </Issue>
                     </div>
@@ -300,9 +304,9 @@ ListIssues.propTypes = {
 };
 
 function mapStateToProps({sprint, backlog}) {
-
-    return { sprint,
-        backlog
+    return {
+        sprint,
+        backlog,
     };
 }
 

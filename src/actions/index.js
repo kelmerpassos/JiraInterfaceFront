@@ -4,7 +4,8 @@ export const SPRINT_ISSUES = 'sprint_issues',
              BACKLOG_ISSUES = 'backlog_issues',
              PROJECT_COMPONENTS = 'project_components',
              ISSUE = 'issue',
-             ISSUE_ATTACH = 'issue_attach';
+             ISSUE_ATTACH = 'issue_attach',
+             PRIORITIES = 'priorities';
 
 const ROOT_URL = "http://localhost:3000";
 
@@ -60,6 +61,15 @@ export function fetchAttachment(key, attach) {
 
     return {
         type: ISSUE_ATTACH,
+        payload: request
+    };
+}
+
+export function fetchPriorities() {
+    const request = axios.get(`${ROOT_URL}/priority`);
+
+    return {
+        type: PRIORITIES,
         payload: request
     };
 }
