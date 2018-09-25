@@ -62,48 +62,20 @@ class Home extends Component {
 
         return (
             <div className={classes.root}>
-                {/*<AppBar position="static">*/}
-                    {/*<Toolbar>*/}
-                        {/*<IconButton color="inherit" aria-label="Menu">*/}
-                            {/*<MenuIcon />*/}
-                        {/*</IconButton>*/}
-                        {/*/!*<Typography variant="title" color="inherit">*!/*/}
-                        {/*/!*Title*!/*/}
-                        {/*/!*</Typography>*!/*/}
-                    {/*</Toolbar>*/}
-                {/*</AppBar>*/}
-                <AppBar position="static" color="default">
-                    <Tabs
-                        value={this.state.value}
-                        onChange={this.handleChange}
-                        indicatorColor="primary"
-                        textColor="primary"
-                        fullWidth
-                        centered>
-
-                        <Tab label="Sprint" />
-                        <Tab label="Backlog" />
-                    </Tabs>
+                <AppBar position="static">
+                    <Toolbar>
+                        <IconButton color="inherit" aria-label="Menu">
+                            <MenuIcon />
+                        </IconButton>
+                        {/*<Typography variant="title" color="inherit">*/}
+                        {/*Title*/}
+                        {/*</Typography>*/}
+                    </Toolbar>
                 </AppBar>
-                <SwipeableViews
-                    axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                    index={this.state.value}
-                    onChangeIndex={this.handleChangeIndex}>
-
-                    <TabContainer dir={theme.direction}>
-                        <ListIssues
-                            fetchIssues="sprint"
-                            title="Atividades na Sprint"
-                        />
-                    </TabContainer>
-                    <TabContainer dir={theme.direction}>
-                        <ListIssues
-                            fetchIssues="backlog"
-                            title="Atividades no Backlog"
-                        />
-                    </TabContainer>
-                </SwipeableViews>
-
+                <ListIssues
+                    fetchIssues="backlog"
+                    title="Atividades"
+                />
                 <Switch>
                     <Route path="/issues/:id" component={Issue}/>
                 </Switch>

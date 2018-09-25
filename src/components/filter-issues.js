@@ -13,19 +13,25 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
-import {fetchProjectComponents} from "../actions";
+import {fetchProjectComponents, fetchPriorities} from "../actions";
 
 
 const styles = theme => ({
     root: {
-        // display: 'flex',
-        // flexWrap: 'wrap',
-        flexGrow: 1,
+         display: 'flex',
+         flexWrap: 'wrap',
+         marginTop: '15px',
+
     },
     textField: {
         marginLeft: theme.spacing.unit,
         marginRight: theme.spacing.unit,
         width: 300,
+    },
+    textKey: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
+        width: 80,
     },
     formControl: {
         margin: theme.spacing.unit,
@@ -63,25 +69,53 @@ class FilterIssues extends Component {
         this.state = {
             groups: [],
             selectedGroups: [],
-            pesquisa: ''
+            priorities: [],
+            selectedPriorities: [],
+            search: '',
+            key: '',
         };
 
         this.filter = '';
     }
 
     handleFilterChange = event => {
-        let filter = '',
-            pesquisa = '';
+        let priority = '',
+            group = '',
+            search = '',
+            key = '',
+            filter = '';
 
-        if(this.state.selectedGroups.length > 0){
-            filter = this.state.selectedGroups.toString();
+        if(this.state.selectedPriorities.length > 0){
+            priority = this.state.selectedPriorities.map(priority => `"${priority}"`).toString();
         }
 
-        filter = filter !== '' ? `component in (${filter})` : '';
+        priority = priority !== '' ? `priority in (${priority})` : '';
 
-        if(this.state.pesquisa.length > 2){
-            pesquisa = `text ~ "${this.state.pesquisa}" or key = "${this.state.pesquisa}"`;
-            filter = filter !== '' ? `${filter} and ${pesquisa}` : pesquisa;
+        if(this.state.selectedGroups.length > 0){
+            group = this.state.selectedGroups.map(group => `"${group}"`).toString();
+        }
+
+        group = group !== '' ? `component in (${group})` : '';
+
+        if(this.state.search.length > 2){
+            search = `text ~ "${this.state.search}" or SAC ~ "${this.state.search}"`;
+        }
+
+        if(this.state.key.length >= 6){
+            key = `key = "${this.state.key}"`;
+        }
+
+        filter = priority;
+        if(group !== ''){
+            filter = filter !== '' ? `${filter} and ${group}` : group;
+        }
+
+        if(search !== ''){
+            filter = filter !== '' ? `${filter} and ${search}` : search;
+        }
+
+        if(key !== ''){
+            filter = filter !== '' ? `${filter} and ${key}` : key;
         }
 
         if(this.filter !== filter){
@@ -96,9 +130,21 @@ class FilterIssues extends Component {
         });
     };
 
-    handlePesquisaChange = event => {
+    handlePriorityChange = event => {
         this.setState({
-            pesquisa: event.target.value,
+            selectedPriorities: event.target.value,
+        });
+    };
+
+    handleSearchChange = event => {
+        this.setState({
+            search: event.target.value,
+        });
+    };
+
+    handleKeyChange = event => {
+        this.setState({
+            key: event.target.value,
         });
     };
 
@@ -109,6 +155,12 @@ class FilterIssues extends Component {
                 this.setState({ groups: this.props.groups });
             });
         }
+
+        if(!this.props.priorities){
+            this.props.fetchPriorities().then(response => {
+                this.setState({ priorities: this.props.priorities });
+            });
+        }
     }
 
     render() {
@@ -116,16 +168,37 @@ class FilterIssues extends Component {
 
         return (
             <div className={classes.root}>
-                <FormControl className={classes.formControl}>
-                    <Grid container spacing={16}>
-                        <Grid item md={5}>
-                            <InputLabel htmlFor="select-multiple-checkbox">Grupo</InputLabel>
+                <Grid container spacing={16}>
+                    <FormControl className={classes.formControl}>
+                        <Grid item>
+                            <InputLabel htmlFor="select-priorities">Prioridade</InputLabel>
+                            <Select
+                                multiple
+                                className={classes.select}
+                                value={this.state.selectedPriorities}
+                                onChange={this.handlePriorityChange}
+                                input={<Input id="select-priorities" />}
+                                renderValue={selected => selected.join(', ')}
+                                MenuProps={MenuProps}
+                            >
+                                {this.state.priorities.map(priority => (
+                                    <MenuItem key={priority.id} value={priority.name}>
+                                        <Checkbox checked={this.state.selectedPriorities.indexOf(priority.name) > -1} />
+                                        <ListItemText primary={priority.name} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </Grid>
+                    </FormControl>
+                    <FormControl className={classes.formControl}>
+                        <Grid item>
+                            <InputLabel htmlFor="select-group">Grupo</InputLabel>
                             <Select
                                 multiple
                                 className={classes.select}
                                 value={this.state.selectedGroups}
                                 onChange={this.handleGroupChange}
-                                input={<Input id="select-multiple-checkbox" />}
+                                input={<Input id="select-group" />}
                                 renderValue={selected => selected.join(', ')}
                                 MenuProps={MenuProps}
                             >
@@ -137,27 +210,40 @@ class FilterIssues extends Component {
                                 ))}
                             </Select>
                         </Grid>
-                        <Grid item md={5}>
+                    </FormControl>
+                    <FormControl className={classes.formControl}>
+                        <Grid item>
                             <TextField
-                                id="input-pesquisa"
+                                id="input-search"
                                 label="Pesquisa"
                                 className={classes.textField}
-                                value={this.state.pesquisa}
-                                onChange={this.handlePesquisaChange}
+                                value={this.state.search}
+                                onChange={this.handleSearchChange}
                             />
                         </Grid>
-                        <Grid item md={2}>
-                            <IconButton
-                                color="primary"
-                                className={classes.button}
-                                aria-label="Pesquisa de tickets"
-                                onClick={this.handleFilterChange}
-                            >
-                                <SearchIcon />
-                            </IconButton>
+                    </FormControl>
+                    <FormControl className={classes.formControl}>
+                        <Grid item>
+                            <TextField
+                                id="input-key"
+                                label="Chave"
+                                className={classes.textKey}
+                                value={this.state.key}
+                                onChange={this.handleKeyChange}
+                            />
                         </Grid>
+                    </FormControl>
+                    <Grid item md={2}>
+                        <IconButton
+                            color="primary"
+                            className={classes.button}
+                            aria-label="Pesquisa de tickets"
+                            onClick={this.handleFilterChange}
+                        >
+                            <SearchIcon />
+                        </IconButton>
                     </Grid>
-                </FormControl>
+                </Grid>
             </div>
         );
     }
@@ -171,7 +257,8 @@ FilterIssues.propTypes = {
 
 function mapStateToProps(state) {
 
-    return { groups: state.components };
+    return { groups: state.components,
+             priorities: state.priorities};
 }
 
-export default connect(mapStateToProps, { fetchProjectComponents }) (withStyles(styles, { withTheme: true })(FilterIssues));
+export default connect(mapStateToProps, { fetchProjectComponents, fetchPriorities }) (withStyles(styles, { withTheme: true })(FilterIssues));

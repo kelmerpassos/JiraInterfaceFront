@@ -19,7 +19,7 @@ import Modal from '@material-ui/core/Modal';
 import FilterIssues from './filter-issues';
 import Issue from './issue';
 import {connect} from "react-redux";
-import {fetchBacklogIssues, fetchSprintIssues} from "../actions";
+import {fetchIssuesList, fetchSprintIssues} from "../actions";
 
 const styles = theme => ({
     root: {
@@ -76,26 +76,33 @@ class ListIssues extends Component{
             data: [],
             modalOpen: false,
             modalIssue: null,
+            loading: false
         };
 
         if(this.props.fetchIssues === "sprint"){
             this.fetchIssues = this.props.fetchSprintIssues;
         } else if (this.props.fetchIssues === "backlog"){
-            this.fetchIssues = this.props.fetchBacklogIssues;
+            this.fetchIssues = this.props.fetchIssuesList;
         }
     }
 
     handleUpdate = (jql = '') => {
         if(this.fetchIssues){
+            this.setState({ loading: true });
             this.fetchIssues(jql).then(response => {
                 let data;
                 if(this.props.fetchIssues === "sprint"){
                     data = this.props.sprint;
                 } else if (this.props.fetchIssues === "backlog"){
-                    data = this.props.backlog;
+                    data = this.props.list_issues;
                 }
-
-                this.setState({ data });
+                this.setState({
+                    data,
+                    loading: false
+                });
+            }).catch(error => {
+                alert("Não foi possível realizar a consulta");
+                console.log("Request error", error);
             });
         }
     };
@@ -149,7 +156,7 @@ class ListIssues extends Component{
     render (){
 
         const { classes } = this.props;
-        const { data, order, orderBy, rowsPerPage, page } = this.state;
+        const { data, order, orderBy, rowsPerPage, page, loading } = this.state;
         const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
         const columnData = [
@@ -160,7 +167,7 @@ class ListIssues extends Component{
             { id: 'summary', numeric: false, disablePadding: false, label: 'Resumo' },
             { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão de Liberação' },
             { id: 'storyPoints', numeric: false, disablePadding: false, label: 'Pontos' },
-            { id: 'priority', numeric: false, disablePadding: false, label: 'Prioridade' },
+            { id: 'priorityId', numeric: false, disablePadding: false, label: 'Prioridade' },
         ];
 
         function renderIssues(owner){
@@ -253,7 +260,9 @@ class ListIssues extends Component{
 
                                 <TableRow style={{ height: 49 * emptyRows }}>
                                     <TableCell colSpan={6}>
-                                        <CircularProgress className={classes.progress} size={50} />
+                                        {
+                                            loading && (<CircularProgress className={classes.progress} size={50} />)
+                                        }
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -303,11 +312,11 @@ ListIssues.propTypes = {
     title: PropTypes.string.isRequired,
 };
 
-function mapStateToProps({sprint, backlog}) {
+function mapStateToProps({sprint, list_issues}) {
     return {
         sprint,
-        backlog,
+        list_issues,
     };
 }
 
-export default connect(mapStateToProps, { fetchSprintIssues, fetchBacklogIssues }) (withStyles(styles)(ListIssues));
+export default connect(mapStateToProps, { fetchSprintIssues, fetchIssuesList }) (withStyles(styles)(ListIssues));

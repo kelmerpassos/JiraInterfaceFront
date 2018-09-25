@@ -1,16 +1,13 @@
+import {ROOT_URL, PROJECT_ID} from '../config';
 import axios from 'axios';
 
 export const SPRINT_ISSUES = 'sprint_issues',
-             BACKLOG_ISSUES = 'backlog_issues',
+             ISSUES_LIST = 'issues_list',
              PROJECT_COMPONENTS = 'project_components',
              ISSUE = 'issue',
              ISSUE_UPDATE = 'issue_update',
              ISSUE_ATTACH = 'issue_attach',
              PRIORITIES = 'priorities';
-
-const ROOT_URL = "http://localhost:3000";
-
-const PROJECT_ID = 10000;
 
 export function fetchSprintIssues(filter) {
 
@@ -24,14 +21,14 @@ export function fetchSprintIssues(filter) {
     };
 }
 
-export function fetchBacklogIssues(filter) {
+export function fetchIssuesList(filter) {
 
     filter = filter ? `?jql=${filter}` : '';
 
     const request = axios.get(`${ROOT_URL}/issues${filter}`);
 
     return {
-        type: BACKLOG_ISSUES,
+        type: ISSUES_LIST,
         payload: request
     };
 }

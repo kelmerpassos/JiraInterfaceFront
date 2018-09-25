@@ -1,13 +1,12 @@
 import { combineReducers } from 'redux';
 import SprintReducer from './reducer-sprint';
-import BacklogReducer from './reducer-backlog';
 import ComponentsReducer from './reducer-components';
-import IssueReducer from './reducer-issue';
+import {ListIssueReducer, IssueReducer} from './reducer-issue';
 import PriorityReducer from './reducer-priority';
 
 const rootReducer = combineReducers({
     sprint: SprintReducer,
-    backlog: BacklogReducer,
+    list_issues: ListIssueReducer,
     components: ComponentsReducer,
     issue: IssueReducer,
     priorities: PriorityReducer,
