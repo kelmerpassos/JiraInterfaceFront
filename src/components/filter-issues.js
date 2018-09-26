@@ -116,20 +116,23 @@ class FilterIssues extends Component {
         }
 
         function addFilter(value){
+
             if(value !== ''){
                 filter = filter !== '' ? `${filter} and ${value}` : value;
             }
         }
 
         addFilter(priority);
-        //addFilter(sprint);
+        addFilter(sprint);
         addFilter(group);
         addFilter(search);
         addFilter(key);
 
-        if(this.filter !== filter && filter !== ''){
+        if(filter !== ''){
             this.filter = filter;
             this.props.onChangeFilter(this.filter);
+        } else{
+            alert('Pelo menos um filtro deve ser informado.');
         }
     };
 
@@ -147,8 +150,13 @@ class FilterIssues extends Component {
 
     handleSprintChange = event => {
         this.setState({
+            selectedSprintsID: event.target.value.map( name => {
+                let selected = this.state.sprints.find( (sprint, index, array) => {
+                    return sprint.name === name
+                });
+               return selected ? selected.id : -1;
+            } ),
             selectedSprints: event.target.value,
-            selectedSprintsID: event.target.value,
         });
     };
 
@@ -185,6 +193,19 @@ class FilterIssues extends Component {
         }
     }
 
+    translateState(state){
+        switch (state) {
+            case 'closed':
+                return 'Fechada';
+            case 'active':
+                return 'Aberta';
+            case 'future':
+                return 'Futura';
+            default:
+                return state;
+        }
+    }
+
     render() {
         const { classes, theme } = this.props;
 
@@ -200,13 +221,13 @@ class FilterIssues extends Component {
                                 value={this.state.selectedSprints}
                                 onChange={this.handleSprintChange}
                                 input={<Input id="select-sprint" />}
-                                renderValue={selected => selected.join(', ')}
+                                renderValue={sprints => sprints.join(', ')}
                                 MenuProps={MenuProps}
                             >
                                 {this.state.sprints.map(sprint => (
                                     <MenuItem key={sprint.id} value={sprint.name}>
                                         <Checkbox checked={this.state.selectedSprints.indexOf(sprint.name) > -1} />
-                                        <ListItemText primary={sprint.name} />
+                                        <ListItemText primary={`${sprint.name} - ${this.translateState(sprint.state)}`} />
                                     </MenuItem>
                                 ))}
                             </Select>

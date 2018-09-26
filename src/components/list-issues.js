@@ -19,7 +19,8 @@ import Modal from '@material-ui/core/Modal';
 import FilterIssues from './filter-issues';
 import Issue from './issue';
 import {connect} from "react-redux";
-import {fetchIssuesList, fetchSprintIssues} from "../actions";
+import {fetchIssuesList} from "../actions";
+import Grid from "@material-ui/core/Grid/Grid";
 
 const styles = theme => ({
     root: {
@@ -79,15 +80,13 @@ class ListIssues extends Component{
             loading: false
         };
 
-        if(this.props.fetchIssues === "sprint"){
-            this.fetchIssues = this.props.fetchSprintIssues;
-        } else if (this.props.fetchIssues === "backlog"){
+        if (this.props.fetchIssues === "backlog"){
             this.fetchIssues = this.props.fetchIssuesList;
         }
     }
 
     handleUpdate = (jql = '') => {
-        if(this.fetchIssues){
+        if(jql !== '' && this.fetchIssues){
             this.setState({ loading: true });
             this.fetchIssues(jql).then(response => {
                 let data;
@@ -101,6 +100,7 @@ class ListIssues extends Component{
                     loading: false
                 });
             }).catch(error => {
+                this.setState({ loading: false });
                 alert("Não foi possível realizar a consulta");
                 console.log("Request error", error);
             });
@@ -108,7 +108,7 @@ class ListIssues extends Component{
     };
 
     componentDidMount(){
-        this.handleUpdate();
+        //this.handleUpdate();
     }
 
     handleRequestSort = (event, property) => {
@@ -225,6 +225,13 @@ class ListIssues extends Component{
                     {/*</Tooltip>*/}
                 </Toolbar>
                 <Paper className={classes.root}>
+                    <Grid container spacing={16} justify={"center"}>
+                        <Grid>
+                            {
+                                loading && (<CircularProgress className={classes.progress} size={50} />)
+                            }
+                        </Grid>
+                    </Grid>
                     <Table aria-labelledby="tableTitle">
                         <TableHead>
                             <TableRow>
@@ -260,12 +267,11 @@ class ListIssues extends Component{
 
                                 <TableRow style={{ height: 49 * emptyRows }}>
                                     <TableCell colSpan={6}>
-                                        {
-                                            loading && (<CircularProgress className={classes.progress} size={50} />)
-                                        }
+
                                     </TableCell>
                                 </TableRow>
                             )}
+
                         </TableBody>
                     </Table>
                     <TablePagination
@@ -319,4 +325,4 @@ function mapStateToProps({sprint, list_issues}) {
     };
 }
 
-export default connect(mapStateToProps, { fetchSprintIssues, fetchIssuesList }) (withStyles(styles)(ListIssues));
+export default connect(mapStateToProps, { fetchIssuesList }) (withStyles(styles)(ListIssues));
