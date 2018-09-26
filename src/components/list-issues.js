@@ -54,7 +54,7 @@ const styles = theme => ({
         height: '80%',
         backgroundColor: theme.palette.background.paper,
         boxShadow: theme.shadows[5],
-        padding: theme.spacing.unit * 4,
+        padding: theme.spacing.unit,
     },
 });
 
@@ -163,8 +163,8 @@ class ListIssues extends Component{
             { id: 'id', numeric: false, disablePadding: false, label: 'Chave' },
             { id: 'groupComponents', numeric: false, disablePadding: false, label: 'Grupo' },
             { id: 'issuetype', numeric: false, disablePadding: false, label: 'Tipo' },
-            { id: 'status', numeric: false, disablePadding: false, label: 'Situação' },
             { id: 'summary', numeric: false, disablePadding: false, label: 'Resumo' },
+            { id: 'status', numeric: false, disablePadding: false, label: 'Situação' },
             { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão de Liberação' },
             { id: 'storyPoints', numeric: false, disablePadding: false, label: 'Pontos' },
             { id: 'priorityId', numeric: false, disablePadding: false, label: 'Prioridade' },
@@ -181,8 +181,8 @@ class ListIssues extends Component{
                             </TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupComponents}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.issuetype}</TableCell>
-                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.status}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.summary}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.status}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupFixVersions}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.storyPoints ? issue.storyPoints : ''}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.priority ? issue.priority.name : ''}</TableCell>
@@ -224,14 +224,14 @@ class ListIssues extends Component{
                         {/*</IconButton>*/}
                     {/*</Tooltip>*/}
                 </Toolbar>
-                <Paper className={classes.root}>
-                    <Grid container spacing={16} justify={"center"}>
-                        <Grid>
-                            {
-                                loading && (<CircularProgress className={classes.progress} size={50} />)
-                            }
-                        </Grid>
+                <Grid container spacing={16} justify={"center"}>
+                    <Grid>
+                        {
+                            loading && (<CircularProgress className={classes.progress} size={50} />)
+                        }
                     </Grid>
+                </Grid>
+                <Paper className={classes.root}>
                     <Table aria-labelledby="tableTitle">
                         <TableHead>
                             <TableRow>

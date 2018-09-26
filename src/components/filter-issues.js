@@ -26,7 +26,7 @@ const styles = theme => ({
     textField: {
         marginLeft: theme.spacing.unit,
         marginRight: theme.spacing.unit,
-        width: 300,
+        width: 200,
     },
     textKey: {
         marginLeft: theme.spacing.unit,
@@ -46,7 +46,7 @@ const styles = theme => ({
         margin: theme.spacing.unit,
     },
     select: {
-        width: 300,
+        width: 200,
     },
 });
 
@@ -111,8 +111,14 @@ class FilterIssues extends Component {
             search = `text ~ "${this.state.search}" or SAC ~ "${this.state.search}"`;
         }
 
-        if(this.state.key.length >= 6){
+        if(this.state.key !== ''){
             key = `key = "${this.state.key}"`;
+        }
+
+        if(key !== '' && !/^(serv-)[0-9]+$/i.test(this.state.key)){
+            key = '';
+            alert('Chave de documento inválida. A chave é componta da palavra SERV- seguida por um número.');
+            return '';
         }
 
         function addFilter(value){

@@ -71,7 +71,7 @@ class Home extends Component {
                 </AppBar>
                 <ListIssues
                     fetchIssues="backlog"
-                    title="Atividades"
+                    title="Documentos"
                 />
                 <Switch>
                     <Route path="/issues/:id" component={Issue}/>

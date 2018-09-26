@@ -2,16 +2,17 @@ import React, { Component } from 'react';
 import PropTypes from "prop-types";
 import {withStyles, MuiThemeProvider, createMuiTheme} from "@material-ui/core";
 import {connect} from "react-redux";
-import {fetchIssue, fetchAttachment, fetchPriorities, updateIssue} from "../actions";
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import SelectComp from './SelectComp';
+import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import DoneIcon from '@material-ui/icons/Done';
 import CloseIcon from '@material-ui/icons/Close';
 import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
+import SelectComp from './SelectComp';
+import {fetchIssue, fetchAttachment, fetchPriorities, updateIssue} from "../actions";
 
 const themeButton = createMuiTheme({
     palette: {
@@ -28,6 +29,10 @@ const styles = theme => ({
             marginLeft: 'auto',
             marginRight: 'auto',
         },
+    },
+    paper: {
+        marginTop: theme.spacing.unit * 3,
+        padding: theme.spacing.unit * 2,
     },
     fieldLabel: {
         color: '#5e6c84'
@@ -97,186 +102,188 @@ class Issue extends Component {
 
         return (
             <div className={classes.root}>
-                <Grid container spacing={16}>
-                    <Grid item sm={12}>
-                        <Typography variant="subheading">
-                            <strong className={classes.fieldLabel}>{issue? issue.key : ''}</strong> {issue? ' - ' + issue.summary : ''}
-                        </Typography>
-                    </Grid>
-                    <Grid item sm={12}>
-                        <Typography variant="body2">
-                            <Grid container item sm={12} spacing={8}>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Prioridade:</span>
-                                    </Grid>
-                                    <Grid>
-                                        { issue && issue.priority && (
-                                            <SelectComp
-                                                value={issue.priority}
-                                                listValues={this.state.priorities}
-                                                updateValue={(value) => {
-                                                    const changed = originalIssue.priority.id !== value.id;
-
-                                                    issue.priority.id = value.id;
-                                                    issue.priority.name = value.name;
-
-                                                    this.setState({
-                                                        issue: issue,
-                                                        hasChange: changed
-                                                    });
-                                                } }/>)
-                                        }
-                                    </Grid>
-                                    <Grid>
-                                        {
-                                            hasChange && !saving && (
-                                                <MuiThemeProvider theme={themeButton}>
-                                                    <Button className={classes.buttonIcon}
-                                                            color="primary"
-                                                            size="small"
-                                                            onClick={ event => {
-
-                                                                this.setState({
-                                                                    saving: true,
-                                                                });
-
-                                                                this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
-                                                                    this.setState({
-                                                                        hasChange: false,
-                                                                        saving: false,
-                                                                        originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
-                                                                    });
-
-                                                                    if(this.props.onIssueChange){
-                                                                        this.props.onIssueChange(this.state.issue);
-                                                                    }
-                                                                }).catch( error => {
-                                                                    this.setState({
-                                                                        saving: false,
-                                                                    });
-
-                                                                    console.log('Erro ao salvar', error);
-                                                                    alert('Não foi possível salvar as alterações.');
-                                                                });
-                                                            }}>
-                                                        <DoneIcon/>
-                                                    </Button>
-                                                    <Button className={classes.buttonIcon}
-                                                            color="secondary"
-                                                            size="small"
-                                                            onClick={event => {
-                                                                issue.priority.id = originalIssue.priority.id;
-                                                                issue.priority.name = originalIssue.priority.name;
-
-                                                                this.setState({
-                                                                    issue: issue,
-                                                                    hasChange: false
-                                                                });
-                                                            }}>
-                                                        <CloseIcon/>
-                                                    </Button>
-                                                </MuiThemeProvider>
-                                            )
-                                        }
-                                        {
-                                            saving && (
-                                                <CircularProgress style={{marginLeft: '10px'}} size={24} />
-                                            )
-                                        }
-                                    </Grid>
-                                </Grid>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Tipo:</span>
-                                        {issue && issue.issuetype ? ' ' + issue.issuetype : '' }
-                                    </Grid>
-                                </Grid>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Pontos:</span>
-                                        {issue && issue.storyPoints ? ' ' + issue.storyPoints : '' }
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item sm={12} container spacing={8}>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Relator:</span>
-                                        {issue && issue.creator ? ' ' + issue.creator : '' }
-                                    </Grid>
-                                </Grid>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Status:</span>
-                                        {issue && issue.status ? ' ' + issue.status : '' }
-                                    </Grid>
-                                </Grid>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Product Owner:</span>
-                                        {issue && issue.productOwner ? ' ' + issue.productOwner : '' }
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item sm={12} container spacing={8}>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Grupo:</span>
-                                        {issue && issue.groupComponents ? ' ' + issue.groupComponents : '' }
-                                    </Grid>
-                                </Grid>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>Versão de Liberação:</span>
-                                        {issue && issue.groupFixVersions ? ' ' + issue.groupFixVersions : '' }
-                                    </Grid>
-                                </Grid>
-                                <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                    <Grid>
-                                        <span className={classes.fieldLabel}>SAC:</span>
-                                        {issue && issue.sac ? ' ' + issue.sac : '' }
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                        </Typography>
-                    </Grid>
-                    { !this.props.issue  && (
-                        <Grid item sm={12} justify={"center"} container>
-                            <Grid>
-                                <CircularProgress className={classes.progress} size={50} />
-                            </Grid>
-                        </Grid>)
-                    }
-                    { this.props.issue && (
+                <Paper  className={classes.paper}>
+                    <Grid container spacing={16}>
+                        <Grid item sm={12}>
+                            <Typography variant="subheading">
+                                <strong className={classes.fieldLabel}>{issue? issue.key : ''}</strong> {issue? ' - ' + issue.summary : ''}
+                            </Typography>
+                        </Grid>
                         <Grid item sm={12}>
                             <Typography variant="body2">
-                                <Grid container spacing={8}>
-                                    <Grid item md={8}>
-                                        <Grid container spacing={8}>
-                                            <Grid item sm={12}>
-                                                <span className={classes.fieldLabel}>Solução/Teste:</span>
-                                                <span dangerouslySetInnerHTML={{__html: issue && issue.solution_test ? issue.solution_test : '' }}/>
-                                            </Grid>
-                                            <Grid item sm={12}>
-                                                <span className={classes.fieldLabel}>Descrição:</span>
-                                                <span dangerouslySetInnerHTML={{__html: issue && issue.description ? issue.description : '' }}/>
-                                            </Grid>
+                                <Grid container item sm={12} spacing={8}>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Prioridade:</span>
+                                        </Grid>
+                                        <Grid>
+                                            { issue && issue.priority && (
+                                                <SelectComp
+                                                    value={issue.priority}
+                                                    listValues={this.state.priorities}
+                                                    updateValue={(value) => {
+                                                        const changed = originalIssue.priority.id !== value.id;
+
+                                                        issue.priority.id = value.id;
+                                                        issue.priority.name = value.name;
+
+                                                        this.setState({
+                                                            issue: issue,
+                                                            hasChange: changed
+                                                        });
+                                                    } }/>)
+                                            }
+                                        </Grid>
+                                        <Grid>
+                                            {
+                                                hasChange && !saving && (
+                                                    <MuiThemeProvider theme={themeButton}>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="primary"
+                                                                size="small"
+                                                                onClick={ event => {
+
+                                                                    this.setState({
+                                                                        saving: true,
+                                                                    });
+
+                                                                    this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
+                                                                        this.setState({
+                                                                            hasChange: false,
+                                                                            saving: false,
+                                                                            originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                        });
+
+                                                                        if(this.props.onIssueChange){
+                                                                            this.props.onIssueChange(this.state.issue);
+                                                                        }
+                                                                    }).catch( error => {
+                                                                        this.setState({
+                                                                            saving: false,
+                                                                        });
+
+                                                                        console.log('Erro ao salvar', error);
+                                                                        alert('Não foi possível salvar as alterações.');
+                                                                    });
+                                                                }}>
+                                                            <DoneIcon/>
+                                                        </Button>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="secondary"
+                                                                size="small"
+                                                                onClick={event => {
+                                                                    issue.priority.id = originalIssue.priority.id;
+                                                                    issue.priority.name = originalIssue.priority.name;
+
+                                                                    this.setState({
+                                                                        issue: issue,
+                                                                        hasChange: false
+                                                                    });
+                                                                }}>
+                                                            <CloseIcon/>
+                                                        </Button>
+                                                    </MuiThemeProvider>
+                                                )
+                                            }
+                                            {
+                                                saving && (
+                                                    <CircularProgress style={{marginLeft: '10px'}} size={24} />
+                                                )
+                                            }
                                         </Grid>
                                     </Grid>
-                                    <Grid item md={4}>
-                                        <span className={classes.fieldLabel}>Anexos:</span>
-                                        <Grid container spacing={8}>
-                                            {
-                                                renderAnexos(this.props.fetchAttachment, issue)
-                                            }
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Tipo:</span>
+                                            {issue && issue.issuetype ? ' ' + issue.issuetype : '' }
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Pontos:</span>
+                                            {issue && issue.storyPoints ? ' ' + issue.storyPoints : '' }
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                <Grid item sm={12} container spacing={8}>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Relator:</span>
+                                            {issue && issue.creator ? ' ' + issue.creator : '' }
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Status:</span>
+                                            {issue && issue.status ? ' ' + issue.status : '' }
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Product Owner:</span>
+                                            {issue && issue.productOwner ? ' ' + issue.productOwner : '' }
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                <Grid item sm={12} container spacing={8}>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Grupo:</span>
+                                            {issue && issue.groupComponents ? ' ' + issue.groupComponents : '' }
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Versão de Liberação:</span>
+                                            {issue && issue.groupFixVersions ? ' ' + issue.groupFixVersions : '' }
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>SAC:</span>
+                                            {issue && issue.sac ? ' ' + issue.sac : '' }
                                         </Grid>
                                     </Grid>
                                 </Grid>
                             </Typography>
-                        </Grid>)
-                    }
-                </Grid>
+                        </Grid>
+                        { !this.props.issue  && (
+                            <Grid item sm={12} justify={"center"} container>
+                                <Grid>
+                                    <CircularProgress className={classes.progress} size={50} />
+                                </Grid>
+                            </Grid>)
+                        }
+                        { this.props.issue && (
+                            <Grid item sm={12}>
+                                <Typography variant="body2">
+                                    <Grid container spacing={8}>
+                                        <Grid item md={8}>
+                                            <Grid container spacing={8}>
+                                                <Grid item sm={12}>
+                                                    <span className={classes.fieldLabel}>Solução/Teste:</span>
+                                                    <span dangerouslySetInnerHTML={{__html: issue && issue.solution_test ? issue.solution_test : '' }}/>
+                                                </Grid>
+                                                <Grid item sm={12}>
+                                                    <span className={classes.fieldLabel}>Descrição:</span>
+                                                    <span dangerouslySetInnerHTML={{__html: issue && issue.description ? issue.description : '' }}/>
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid item md={4}>
+                                            <span className={classes.fieldLabel}>Anexos:</span>
+                                            <Grid container spacing={8}>
+                                                {
+                                                    renderAnexos(this.props.fetchAttachment, issue)
+                                                }
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Typography>
+                            </Grid>)
+                        }
+                    </Grid>
+                </Paper>
             </div>
         );
     }
