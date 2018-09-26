@@ -1,7 +1,8 @@
-import {ROOT_URL, PROJECT_ID} from '../config';
+import {ROOT_URL, PROJECT_ID, BOARD_ID} from '../config';
 import axios from 'axios';
 
 export const SPRINT_ISSUES = 'sprint_issues',
+             SPRINTS_LIST = 'sprints_list',
              ISSUES_LIST = 'issues_list',
              PROJECT_COMPONENTS = 'project_components',
              ISSUE = 'issue',
@@ -9,11 +10,22 @@ export const SPRINT_ISSUES = 'sprint_issues',
              ISSUE_ATTACH = 'issue_attach',
              PRIORITIES = 'priorities';
 
-export function fetchSprintIssues(filter) {
+export function fetchListSprints(boardId) {
 
+    boardId = boardId ? boardId : BOARD_ID;
+
+    const request = axios.get(`${ROOT_URL}/board/${boardId}/sprint`);
+
+    return {
+        type: SPRINTS_LIST,
+        payload: request
+    };
+}
+
+export function fetchSprintIssues(id, filter) {
     filter = filter ? `?jql=${filter}` : '';
 
-    const request = axios.get(`${ROOT_URL}/sprint${filter}`);
+    const request = axios.get(`${ROOT_URL}/sprint/${id}/issue${filter}`);
 
     return {
         type: SPRINT_ISSUES,

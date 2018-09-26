@@ -13,7 +13,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
-import {fetchProjectComponents, fetchPriorities} from "../actions";
+import {fetchProjectComponents, fetchPriorities, fetchListSprints} from "../actions";
 
 
 const styles = theme => ({
@@ -71,6 +71,9 @@ class FilterIssues extends Component {
             selectedGroups: [],
             priorities: [],
             selectedPriorities: [],
+            sprints: [],
+            selectedSprints: [],
+            selectedSprintsID: [],
             search: '',
             key: '',
         };
@@ -80,6 +83,7 @@ class FilterIssues extends Component {
 
     handleFilterChange = event => {
         let priority = '',
+            sprint = '',
             group = '',
             search = '',
             key = '',
@@ -90,6 +94,12 @@ class FilterIssues extends Component {
         }
 
         priority = priority !== '' ? `priority in (${priority})` : '';
+
+        if(this.state.selectedSprintsID.length > 0){
+            sprint = this.state.selectedSprintsID.toString();
+        }
+
+        sprint = sprint !== '' ? `Sprint in (${sprint})` : '';
 
         if(this.state.selectedGroups.length > 0){
             group = this.state.selectedGroups.map(group => `"${group}"`).toString();
@@ -105,20 +115,19 @@ class FilterIssues extends Component {
             key = `key = "${this.state.key}"`;
         }
 
-        filter = priority;
-        if(group !== ''){
-            filter = filter !== '' ? `${filter} and ${group}` : group;
+        function addFilter(value){
+            if(value !== ''){
+                filter = filter !== '' ? `${filter} and ${value}` : value;
+            }
         }
 
-        if(search !== ''){
-            filter = filter !== '' ? `${filter} and ${search}` : search;
-        }
+        addFilter(priority);
+        //addFilter(sprint);
+        addFilter(group);
+        addFilter(search);
+        addFilter(key);
 
-        if(key !== ''){
-            filter = filter !== '' ? `${filter} and ${key}` : key;
-        }
-
-        if(this.filter !== filter){
+        if(this.filter !== filter && filter !== ''){
             this.filter = filter;
             this.props.onChangeFilter(this.filter);
         }
@@ -133,6 +142,13 @@ class FilterIssues extends Component {
     handlePriorityChange = event => {
         this.setState({
             selectedPriorities: event.target.value,
+        });
+    };
+
+    handleSprintChange = event => {
+        this.setState({
+            selectedSprints: event.target.value,
+            selectedSprintsID: event.target.value,
         });
     };
 
@@ -161,6 +177,12 @@ class FilterIssues extends Component {
                 this.setState({ priorities: this.props.priorities });
             });
         }
+
+        if(!this.props.sprints){
+            this.props.fetchListSprints().then(response => {
+                this.setState({ sprints: this.props.sprints });
+            });
+        }
     }
 
     render() {
@@ -169,8 +191,29 @@ class FilterIssues extends Component {
         return (
             <div className={classes.root}>
                 <Grid container spacing={16}>
-                    <FormControl className={classes.formControl}>
-                        <Grid item>
+                    <Grid item>
+                        <FormControl className={classes.formControl}>
+                            <InputLabel htmlFor="select-sprint">Sprint</InputLabel>
+                            <Select
+                                multiple
+                                className={classes.select}
+                                value={this.state.selectedSprints}
+                                onChange={this.handleSprintChange}
+                                input={<Input id="select-sprint" />}
+                                renderValue={selected => selected.join(', ')}
+                                MenuProps={MenuProps}
+                            >
+                                {this.state.sprints.map(sprint => (
+                                    <MenuItem key={sprint.id} value={sprint.name}>
+                                        <Checkbox checked={this.state.selectedSprints.indexOf(sprint.name) > -1} />
+                                        <ListItemText primary={sprint.name} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item>
+                        <FormControl className={classes.formControl}>
                             <InputLabel htmlFor="select-priorities">Prioridade</InputLabel>
                             <Select
                                 multiple
@@ -188,10 +231,10 @@ class FilterIssues extends Component {
                                     </MenuItem>
                                 ))}
                             </Select>
-                        </Grid>
-                    </FormControl>
-                    <FormControl className={classes.formControl}>
-                        <Grid item>
+                        </FormControl>
+                    </Grid>
+                    <Grid item>
+                        <FormControl className={classes.formControl}>
                             <InputLabel htmlFor="select-group">Grupo</InputLabel>
                             <Select
                                 multiple
@@ -209,10 +252,10 @@ class FilterIssues extends Component {
                                     </MenuItem>
                                 ))}
                             </Select>
-                        </Grid>
-                    </FormControl>
-                    <FormControl className={classes.formControl}>
-                        <Grid item>
+                        </FormControl>
+                    </Grid>
+                    <Grid item>
+                        <FormControl className={classes.formControl}>
                             <TextField
                                 id="input-search"
                                 label="Pesquisa"
@@ -220,10 +263,10 @@ class FilterIssues extends Component {
                                 value={this.state.search}
                                 onChange={this.handleSearchChange}
                             />
-                        </Grid>
-                    </FormControl>
-                    <FormControl className={classes.formControl}>
-                        <Grid item>
+                        </FormControl>
+                    </Grid>
+                    <Grid item>
+                        <FormControl className={classes.formControl}>
                             <TextField
                                 id="input-key"
                                 label="Chave"
@@ -231,8 +274,8 @@ class FilterIssues extends Component {
                                 value={this.state.key}
                                 onChange={this.handleKeyChange}
                             />
-                        </Grid>
-                    </FormControl>
+                        </FormControl>
+                    </Grid>
                     <Grid item md={2}>
                         <IconButton
                             color="primary"
@@ -258,7 +301,9 @@ FilterIssues.propTypes = {
 function mapStateToProps(state) {
 
     return { groups: state.components,
-             priorities: state.priorities};
+             priorities: state.priorities,
+             sprints: state.sprints,
+    };
 }
 
-export default connect(mapStateToProps, { fetchProjectComponents, fetchPriorities }) (withStyles(styles, { withTheme: true })(FilterIssues));
+export default connect(mapStateToProps, { fetchProjectComponents, fetchPriorities, fetchListSprints }) (withStyles(styles, { withTheme: true })(FilterIssues));

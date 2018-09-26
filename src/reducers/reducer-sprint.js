@@ -1,6 +1,18 @@
-import { SPRINT_ISSUES } from "../actions";
+import { SPRINT_ISSUES, SPRINTS_LIST } from "../actions";
 
-export default function (state = {}, action) {
+export function SprintReducer (state = null, action) {
+    switch (action.type){
+        case SPRINTS_LIST:
+            if(action.payload.data){
+                return action.payload.data;
+            }
+            return state;
+        default:
+            return state;
+    }
+}
+
+export function SprintIssueReducer (state = {}, action) {
     switch (action.type){
         case SPRINT_ISSUES:
             if(action.payload.data){
