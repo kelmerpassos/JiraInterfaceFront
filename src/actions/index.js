@@ -3,14 +3,15 @@ import axios from 'axios';
 
 export const SPRINT_ISSUES = 'sprint_issues',
              SPRINTS_LIST = 'sprints_list',
-             ISSUES_LIST = 'issues_list',
+             ISSUES_LIST = 'issue_list',
              PROJECT_COMPONENTS = 'project_components',
              ISSUE = 'issue',
              ISSUE_UPDATE = 'issue_update',
              ISSUE_ATTACH = 'issue_attach',
-             PRIORITIES = 'priorities';
+             PRIORITY_LIST = 'priority_list',
+             STATUS_LIST = 'status_list';
 
-export function fetchListSprints(boardId) {
+export function fetchSprintList(boardId) {
 
     boardId = boardId ? boardId : BOARD_ID;
 
@@ -33,7 +34,7 @@ export function fetchSprintIssues(id, filter) {
     };
 }
 
-export function fetchIssuesList(filter) {
+export function fetchIssueList(filter) {
 
     filter = filter ? `?jql=${filter}` : '';
 
@@ -84,11 +85,20 @@ export function fetchAttachment(key, attach) {
     };
 }
 
-export function fetchPriorities() {
+export function fetchPriorityList() {
     const request = axios.get(`${ROOT_URL}/priority`);
 
     return {
-        type: PRIORITIES,
+        type: PRIORITY_LIST,
+        payload: request
+    };
+}
+
+export function fetchStatusList() {
+    const request = axios.get(`${ROOT_URL}/status`);
+
+    return {
+        type: STATUS_LIST,
         payload: request
     };
 }

@@ -1,16 +1,18 @@
 import { combineReducers } from 'redux';
-import { SprintReducer, SprintIssueReducer} from './reducer-sprint';
+import { SprintListReducer, SprintIssueReducer} from './reducer-sprint';
 import ComponentsReducer from './reducer-components';
-import {ListIssueReducer, IssueReducer} from './reducer-issue';
-import PriorityReducer from './reducer-priority';
+import {IssueListReducer, IssueReducer} from './reducer-issue';
+import PriorityListReducer from './reducer-priority';
+import StatusListReducer from './reducer-status';
 
 const rootReducer = combineReducers({
-    sprints: SprintReducer,
+    sprint_list: SprintListReducer,
     sprint_issues: SprintIssueReducer,
-    list_issues: ListIssueReducer,
+    issue_list: IssueListReducer,
     components: ComponentsReducer,
     issue: IssueReducer,
-    priorities: PriorityReducer,
+    priority_list: PriorityListReducer,
+    status_list: StatusListReducer,
 });
 
 export default rootReducer;

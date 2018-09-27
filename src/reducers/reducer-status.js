@@ -1,8 +1,8 @@
-import { PRIORITY_LIST } from "../actions";
+import { STATUS_LIST } from "../actions";
 
 export default function (state = null, action) {
     switch (action.type){
-        case PRIORITY_LIST:
+        case STATUS_LIST:
             if(action.payload.data){
                 return action.payload.data;
             }

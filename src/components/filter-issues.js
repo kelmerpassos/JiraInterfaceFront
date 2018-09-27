@@ -13,8 +13,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
-import {fetchProjectComponents, fetchPriorities, fetchListSprints} from "../actions";
-
+import { fetchProjectComponents, fetchPriorityList, fetchSprintList, fetchStatusList } from "../actions";
 
 const styles = theme => ({
     root: {
@@ -69,9 +68,11 @@ class FilterIssues extends Component {
         this.state = {
             groups: [],
             selectedGroups: [],
-            priorities: [],
+            priority_list: props.priority_list,
             selectedPriorities: [],
-            sprints: [],
+            status_list: props.status_list,
+            selectedStatus: [],
+            sprint_list: props.sprint_list,
             selectedSprints: [],
             selectedSprintsID: [],
             search: '',
@@ -83,6 +84,7 @@ class FilterIssues extends Component {
 
     handleFilterChange = event => {
         let priority = '',
+            status = '',
             sprint = '',
             group = '',
             search = '',
@@ -90,22 +92,20 @@ class FilterIssues extends Component {
             filter = '';
 
         if(this.state.selectedPriorities.length > 0){
-            priority = this.state.selectedPriorities.map(priority => `"${priority}"`).toString();
+            priority = `priority in (${this.state.selectedPriorities.map(item => `"${item}"`).toString()})`;
         }
 
-        priority = priority !== '' ? `priority in (${priority})` : '';
+        if(this.state.selectedStatus.length > 0){
+            status = `status in (${this.state.selectedStatus.map(item => `"${item}"`).toString()})`;
+        }
 
         if(this.state.selectedSprintsID.length > 0){
-            sprint = this.state.selectedSprintsID.toString();
+            sprint = `Sprint in (${this.state.selectedSprintsID.toString()})`;
         }
-
-        sprint = sprint !== '' ? `Sprint in (${sprint})` : '';
 
         if(this.state.selectedGroups.length > 0){
-            group = this.state.selectedGroups.map(group => `"${group}"`).toString();
+            group = `component in (${this.state.selectedGroups.map(item => `"${item}"`).toString()})`;
         }
-
-        group = group !== '' ? `component in (${group})` : '';
 
         if(this.state.search.length > 2){
             search = `text ~ "${this.state.search}" or SAC ~ "${this.state.search}"`;
@@ -117,7 +117,7 @@ class FilterIssues extends Component {
 
         if(key !== '' && !/^(serv-)[0-9]+$/i.test(this.state.key)){
             key = '';
-            alert('Chave de documento inválida. A chave é componta da palavra SERV- seguida por um número.');
+            alert('Chave de documento inválida. A chave é composta da palavra SERV- seguida por um número.');
             return '';
         }
 
@@ -129,6 +129,7 @@ class FilterIssues extends Component {
         }
 
         addFilter(priority);
+        addFilter(status);
         addFilter(sprint);
         addFilter(group);
         addFilter(search);
@@ -154,10 +155,16 @@ class FilterIssues extends Component {
         });
     };
 
+    handleStatusChange = event => {
+        this.setState({
+            selectedStatus: event.target.value,
+        });
+    };
+
     handleSprintChange = event => {
         this.setState({
             selectedSprintsID: event.target.value.map( name => {
-                let selected = this.state.sprints.find( (sprint, index, array) => {
+                let selected = this.state.sprint_list.find( (sprint, index, array) => {
                     return sprint.name === name
                 });
                return selected ? selected.id : -1;
@@ -186,15 +193,21 @@ class FilterIssues extends Component {
             });
         }
 
-        if(!this.props.priorities){
-            this.props.fetchPriorities().then(response => {
-                this.setState({ priorities: this.props.priorities });
+        if(!this.props.priority_list){
+            this.props.fetchPriorityList().then(response => {
+                this.setState({ priority_list: this.props.priority_list });
             });
         }
 
-        if(!this.props.sprints){
-            this.props.fetchListSprints().then(response => {
-                this.setState({ sprints: this.props.sprints });
+        if(!this.props.status_list){
+            this.props.fetchStatusList().then(response => {
+                this.setState({ status_list: this.props.status_list });
+            });
+        }
+
+        if(!this.props.sprint_list){
+            this.props.fetchSprintList().then(response => {
+                this.setState({ sprint_list: this.props.sprint_list });
             });
         }
     }
@@ -218,92 +231,115 @@ class FilterIssues extends Component {
         return (
             <div className={classes.root}>
                 <Grid container spacing={16}>
-                    <Grid item>
-                        <FormControl className={classes.formControl}>
-                            <InputLabel htmlFor="select-sprint">Sprint</InputLabel>
-                            <Select
-                                multiple
-                                className={classes.select}
-                                value={this.state.selectedSprints}
-                                onChange={this.handleSprintChange}
-                                input={<Input id="select-sprint" />}
-                                renderValue={sprints => sprints.join(', ')}
-                                MenuProps={MenuProps}
-                            >
-                                {this.state.sprints.map(sprint => (
-                                    <MenuItem key={sprint.id} value={sprint.name}>
-                                        <Checkbox checked={this.state.selectedSprints.indexOf(sprint.name) > -1} />
-                                        <ListItemText primary={`${sprint.name} - ${this.translateState(sprint.state)}`} />
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                    <Grid item md={11} container>
+                        <Grid item>
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="select-sprint">Sprint</InputLabel>
+                                <Select
+                                    multiple
+                                    className={classes.select}
+                                    value={this.state.selectedSprints}
+                                    onChange={this.handleSprintChange}
+                                    input={<Input id="select-sprint" />}
+                                    renderValue={sprints => sprints.join(', ')}
+                                    MenuProps={MenuProps}
+                                >
+                                    {this.state.sprint_list && this.state.sprint_list.map(sprint => (
+                                        <MenuItem key={sprint.id} value={sprint.name}>
+                                            <Checkbox checked={this.state.selectedSprints.indexOf(sprint.name) > -1} />
+                                            <ListItemText primary={`${sprint.name} - ${this.translateState(sprint.state)}`} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item>
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="select-group">Grupo</InputLabel>
+                                <Select
+                                    multiple
+                                    className={classes.select}
+                                    value={this.state.selectedGroups}
+                                    onChange={this.handleGroupChange}
+                                    input={<Input id="select-group" />}
+                                    renderValue={selected => selected.join(', ')}
+                                    MenuProps={MenuProps}
+                                >
+                                    { this.state.groups && this.state.groups.map(group => (
+                                        <MenuItem key={group.id} value={group.name}>
+                                            <Checkbox checked={this.state.selectedGroups.indexOf(group.name) > -1} />
+                                            <ListItemText primary={group.name} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item>
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="select-priorities">Prioridade</InputLabel>
+                                <Select
+                                    multiple
+                                    className={classes.select}
+                                    value={this.state.selectedPriorities}
+                                    onChange={this.handlePriorityChange}
+                                    input={<Input id="select-priorities" />}
+                                    renderValue={selected => selected.join(', ')}
+                                    MenuProps={MenuProps}
+                                >
+                                    {this.state.priority_list && this.state.priority_list.map(priority => (
+                                        <MenuItem key={priority.id} value={priority.name}>
+                                            <Checkbox checked={this.state.selectedPriorities.indexOf(priority.name) > -1} />
+                                            <ListItemText primary={priority.name} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item>
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="select-status">Situação</InputLabel>
+                                <Select
+                                    multiple
+                                    className={classes.select}
+                                    value={this.state.selectedStatus}
+                                    onChange={this.handleStatusChange}
+                                    input={<Input id="select-status" />}
+                                    renderValue={selected => selected.join(', ')}
+                                    MenuProps={MenuProps}
+                                >
+                                    {this.state.status_list && this.state.status_list.map(status => (
+                                        <MenuItem key={status.id} value={status.name}>
+                                            <Checkbox checked={this.state.selectedStatus.indexOf(status.name) > -1} />
+                                            <ListItemText primary={status.name} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item>
+                            <FormControl className={classes.formControl}>
+                                <TextField
+                                    id="input-search"
+                                    label="Pesquisa"
+                                    className={classes.textField}
+                                    value={this.state.search}
+                                    onChange={this.handleSearchChange}
+                                />
+                            </FormControl>
+                        </Grid>
+                        <Grid item>
+                            <FormControl className={classes.formControl}>
+                                <TextField
+                                    id="input-key"
+                                    label="Chave"
+                                    className={classes.textKey}
+                                    value={this.state.key}
+                                    onChange={this.handleKeyChange}
+                                />
+                            </FormControl>
+                        </Grid>
                     </Grid>
-                    <Grid item>
-                        <FormControl className={classes.formControl}>
-                            <InputLabel htmlFor="select-priorities">Prioridade</InputLabel>
-                            <Select
-                                multiple
-                                className={classes.select}
-                                value={this.state.selectedPriorities}
-                                onChange={this.handlePriorityChange}
-                                input={<Input id="select-priorities" />}
-                                renderValue={selected => selected.join(', ')}
-                                MenuProps={MenuProps}
-                            >
-                                {this.state.priorities.map(priority => (
-                                    <MenuItem key={priority.id} value={priority.name}>
-                                        <Checkbox checked={this.state.selectedPriorities.indexOf(priority.name) > -1} />
-                                        <ListItemText primary={priority.name} />
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item>
-                        <FormControl className={classes.formControl}>
-                            <InputLabel htmlFor="select-group">Grupo</InputLabel>
-                            <Select
-                                multiple
-                                className={classes.select}
-                                value={this.state.selectedGroups}
-                                onChange={this.handleGroupChange}
-                                input={<Input id="select-group" />}
-                                renderValue={selected => selected.join(', ')}
-                                MenuProps={MenuProps}
-                            >
-                                {this.state.groups.map(group => (
-                                    <MenuItem key={group.id} value={group.name}>
-                                        <Checkbox checked={this.state.selectedGroups.indexOf(group.name) > -1} />
-                                        <ListItemText primary={group.name} />
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item>
-                        <FormControl className={classes.formControl}>
-                            <TextField
-                                id="input-search"
-                                label="Pesquisa"
-                                className={classes.textField}
-                                value={this.state.search}
-                                onChange={this.handleSearchChange}
-                            />
-                        </FormControl>
-                    </Grid>
-                    <Grid item>
-                        <FormControl className={classes.formControl}>
-                            <TextField
-                                id="input-key"
-                                label="Chave"
-                                className={classes.textKey}
-                                value={this.state.key}
-                                onChange={this.handleKeyChange}
-                            />
-                        </FormControl>
-                    </Grid>
-                    <Grid item md={2}>
+                    <Grid item md={1}>
                         <IconButton
                             color="primary"
                             className={classes.button}
@@ -326,11 +362,11 @@ FilterIssues.propTypes = {
 };
 
 function mapStateToProps(state) {
-
     return { groups: state.components,
-             priorities: state.priorities,
-             sprints: state.sprints,
+             priority_list: state.priority_list,
+             sprint_list: state.sprint_list,
+             status_list: state.status_list,
     };
 }
 
-export default connect(mapStateToProps, { fetchProjectComponents, fetchPriorities, fetchListSprints }) (withStyles(styles, { withTheme: true })(FilterIssues));
+export default connect(mapStateToProps, { fetchProjectComponents, fetchPriorityList, fetchSprintList, fetchStatusList }) (withStyles(styles, { withTheme: true })(FilterIssues));

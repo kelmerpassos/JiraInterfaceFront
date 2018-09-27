@@ -1,6 +1,6 @@
 import { SPRINT_ISSUES, SPRINTS_LIST } from "../actions";
 
-export function SprintReducer (state = null, action) {
+export function SprintListReducer (state = null, action) {
     switch (action.type){
         case SPRINTS_LIST:
             if(action.payload.data){

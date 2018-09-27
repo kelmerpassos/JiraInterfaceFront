@@ -19,7 +19,7 @@ export function IssueReducer (state = null, action) {
     }
 }
 
-export function ListIssueReducer (state = null, action) {
+export function IssueListReducer (state = null, action) {
     switch (action.type){
         case ISSUES_LIST:
             if(action.payload.data){

@@ -19,7 +19,7 @@ import Modal from '@material-ui/core/Modal';
 import FilterIssues from './filter-issues';
 import Issue from './issue';
 import {connect} from "react-redux";
-import {fetchIssuesList} from "../actions";
+import {fetchIssueList} from "../actions";
 import Grid from "@material-ui/core/Grid/Grid";
 
 const styles = theme => ({
@@ -81,7 +81,7 @@ class ListIssues extends Component{
         };
 
         if (this.props.fetchIssues === "backlog"){
-            this.fetchIssues = this.props.fetchIssuesList;
+            this.fetchIssues = this.props.fetchIssueList;
         }
     }
 
@@ -90,10 +90,8 @@ class ListIssues extends Component{
             this.setState({ loading: true });
             this.fetchIssues(jql).then(response => {
                 let data;
-                if(this.props.fetchIssues === "sprint"){
-                    data = this.props.sprint;
-                } else if (this.props.fetchIssues === "backlog"){
-                    data = this.props.list_issues;
+                if (this.props.fetchIssues === "backlog"){
+                    data = this.props.issue_list;
                 }
                 this.setState({
                     data,
@@ -318,11 +316,10 @@ ListIssues.propTypes = {
     title: PropTypes.string.isRequired,
 };
 
-function mapStateToProps({sprint, list_issues}) {
+function mapStateToProps({issue_list}) {
     return {
-        sprint,
-        list_issues,
+        issue_list,
     };
 }
 
-export default connect(mapStateToProps, { fetchIssuesList }) (withStyles(styles)(ListIssues));
+export default connect(mapStateToProps, { fetchIssueList }) (withStyles(styles)(ListIssues));

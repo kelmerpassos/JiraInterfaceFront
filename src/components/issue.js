@@ -12,7 +12,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
 import SelectComp from './SelectComp';
-import {fetchIssue, fetchAttachment, fetchPriorities, updateIssue} from "../actions";
+import {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue} from "../actions";
 
 const themeButton = createMuiTheme({
     palette: {
@@ -52,30 +52,35 @@ class Issue extends Component {
         this.state = {
             originalIssue: props.issueObj ? JSON.parse(JSON.stringify(props.issueObj)) : null,
             issue : props.issueObj,
-            priorities: props.priorities,
+            priority_list: props.priority_list,
             hasChange: false,
             saving: false,
+            loading: false,
         };
     }
 
     componentDidMount(){
 
         let key = this.props.match ? this.props.match.params.key : null;
-
         key = this.props.issueObj ? this.props.issueObj.key : key;
 
-        if(!this.props.priorities){
-            this.props.fetchPriorities().then(response => {
-                this.setState({ priorities: this.props.priorities });
+        if(!this.props.priority_list){
+            this.props.fetchPriorityList().then(response => {
+                this.setState({ priority_list: this.props.priority_list });
             });
         }
 
         if(key){
+            this.setState({loading: true});
             this.props.fetchIssue(key).then(response => {
                 this.setState({
                     issue: this.props.issue,
                     originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                    loading: false,
                 });
+            }).catch(error => {
+                this.setState({loading: false});
+                alert('Não foi possível realizar a busca das informações');
             });
         }
     }
@@ -120,7 +125,7 @@ class Issue extends Component {
                                             { issue && issue.priority && (
                                                 <SelectComp
                                                     value={issue.priority}
-                                                    listValues={this.state.priorities}
+                                                    listValues={this.state.priority_list}
                                                     updateValue={(value) => {
                                                         const changed = originalIssue.priority.id !== value.id;
 
@@ -214,7 +219,7 @@ class Issue extends Component {
                                     </Grid>
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
                                         <Grid>
-                                            <span className={classes.fieldLabel}>Status:</span>
+                                            <span className={classes.fieldLabel}>Situação:</span>
                                             {issue && issue.status ? ' ' + issue.status : '' }
                                         </Grid>
                                     </Grid>
@@ -228,8 +233,8 @@ class Issue extends Component {
                                 <Grid item sm={12} container spacing={8}>
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
                                         <Grid>
-                                            <span className={classes.fieldLabel}>Grupo:</span>
-                                            {issue && issue.groupComponents ? ' ' + issue.groupComponents : '' }
+                                            <span className={classes.fieldLabel}>Responsável:</span>
+                                            {issue && issue.assignee ? ' ' + issue.assignee : '' }
                                         </Grid>
                                     </Grid>
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
@@ -245,9 +250,17 @@ class Issue extends Component {
                                         </Grid>
                                     </Grid>
                                 </Grid>
+                                <Grid item sm={12} container spacing={8}>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Grupo:</span>
+                                            {issue && issue.groupComponents ? ' ' + issue.groupComponents : '' }
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
                             </Typography>
                         </Grid>
-                        { !this.props.issue  && (
+                        { this.state.loading && (
                             <Grid item sm={12} justify={"center"} container>
                                 <Grid>
                                     <CircularProgress className={classes.progress} size={50} />
@@ -295,8 +308,8 @@ Issue.propTypes = {
     onIssueChange: PropTypes.func,
 };
 
-function mapStateToProps({issue, priorities}) {
-    return {issue, priorities};
+function mapStateToProps({issue, priority_list}) {
+    return {issue, priority_list};
 }
 
-export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorities, updateIssue}) (withStyles(styles, { withTheme: true })(Issue));
+export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue}) (withStyles(styles, { withTheme: true })(Issue));
