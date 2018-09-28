@@ -257,6 +257,12 @@ class Issue extends Component {
                                             {issue && issue.groupComponents ? ' ' + issue.groupComponents : '' }
                                         </Grid>
                                     </Grid>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Sprint:</span>
+                                            {issue && issue.sprint ? ' ' + issue.sprint.name : '' }
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                             </Typography>
                         </Grid>
