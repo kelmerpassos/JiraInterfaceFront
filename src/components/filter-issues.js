@@ -20,7 +20,6 @@ const styles = theme => ({
          display: 'flex',
          flexWrap: 'wrap',
          marginTop: '15px',
-
     },
     textField: {
         marginLeft: theme.spacing.unit,
@@ -86,10 +85,13 @@ class FilterIssues extends Component {
         let priority = '',
             status = '',
             sprint = '',
+            noSprint = '',
             group = '',
             search = '',
             key = '',
-            filter = '';
+            filter = '',
+            backlogId = -1,
+            sprintIdList = this.state.selectedSprintsID.slice(0, this.state.selectedSprintsID.length +1);
 
         if(this.state.selectedPriorities.length > 0){
             priority = `priority in (${this.state.selectedPriorities.map(item => `"${item}"`).toString()})`;
@@ -99,8 +101,34 @@ class FilterIssues extends Component {
             status = `status in (${this.state.selectedStatus.map(item => `"${item}"`).toString()})`;
         }
 
-        if(this.state.selectedSprintsID.length > 0){
-            sprint = `Sprint in (${this.state.selectedSprintsID.toString()})`;
+        backlogId = sprintIdList.indexOf(-1);
+
+        if(backlogId > -1){
+            let noSprintItem = [],
+                item;
+
+            for(let i = 0; i < this.state.sprint_list.length; i++){
+                item = this.state.sprint_list[i];
+                if(sprintIdList.indexOf(item.id) === -1){
+                    noSprintItem.push(item.id);
+                }
+            }
+
+            noSprint = `Sprint not in (${noSprintItem.toString()}) or Sprint is EMPTY`;
+
+            sprintIdList.splice(backlogId,1);
+        }
+
+        if(sprintIdList.length > 0){
+            sprint = `Sprint in (${sprintIdList.toString()})`;
+        }
+
+        if(noSprint !== ''){
+            if (sprint !== ''){
+                noSprint = `or ${noSprint}`;
+            }
+
+            sprint = `(${sprint} ${noSprint})`;
         }
 
         if(this.state.selectedGroups.length > 0){
@@ -207,7 +235,13 @@ class FilterIssues extends Component {
 
         if(!this.props.sprint_list){
             this.props.fetchSprintList().then(response => {
-                this.setState({ sprint_list: this.props.sprint_list });
+                let sprints = this.props.sprint_list;
+                sprints.push({
+                   id: -1,
+                   name: 'Backlog',
+                   state: 'Aberto'
+                });
+                this.setState({ sprint_list: sprints });
             });
         }
     }
