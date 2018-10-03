@@ -86,7 +86,7 @@ class ListIssues extends Component{
     }
 
     handleUpdate = (jql = '') => {
-        if(jql !== '' && this.fetchIssues){
+        if(!this.state.loading && jql !== '' && this.fetchIssues){
             this.setState({ loading: true });
             this.fetchIssues(jql).then(response => {
                 let data;

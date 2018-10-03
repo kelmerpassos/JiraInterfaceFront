@@ -114,7 +114,7 @@ class FilterIssues extends Component {
                 }
             }
 
-            noSprint = `Sprint not in (${noSprintItem.toString()}) or Sprint is EMPTY`;
+            noSprint = `Sprint is EMPTY`;
 
             sprintIdList.splice(backlogId,1);
         }
@@ -358,6 +358,11 @@ class FilterIssues extends Component {
                                     className={classes.textField}
                                     value={this.state.search}
                                     onChange={this.handleSearchChange}
+                                    onKeyUp={ event => {
+                                        if(event.keyCode === 13){
+                                            this.handleFilterChange();
+                                        }
+                                    }}
                                 />
                             </FormControl>
                         </Grid>
@@ -369,6 +374,11 @@ class FilterIssues extends Component {
                                     className={classes.textKey}
                                     value={this.state.key}
                                     onChange={this.handleKeyChange}
+                                    onKeyUp={ event => {
+                                        if(event.keyCode === 13){
+                                            this.handleFilterChange();
+                                        }
+                                    }}
                                 />
                             </FormControl>
                         </Grid>

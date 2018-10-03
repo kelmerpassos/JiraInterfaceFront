@@ -53,8 +53,8 @@ class Issue extends Component {
             originalIssue: props.issueObj ? JSON.parse(JSON.stringify(props.issueObj)) : null,
             issue : props.issueObj,
             priority_list: props.priority_list,
-            hasChange: false,
-            saving: false,
+            priorityHasChange: false,
+            savingPriority: false,
             loading: false,
         };
     }
@@ -87,10 +87,10 @@ class Issue extends Component {
     
     render (){
         const { classes, theme } = this.props;
-        const { issue, originalIssue, hasChange, saving } = this.state;
+        const { issue, originalIssue, priorityHasChange, savingPriority } = this.state;
 
-        function renderAnexos(callFunc, issue) {
-            return !issue ? '' : issue.attachment.map( attach => {
+        function renderAttachment(callFunc, issue, listAttach) {
+            return !issue ? '' : listAttach.map( attach => {
                 return(
                     <Grid item sm={12} key={attach.content}>
                         <a href={'#'} onClick={(event) => {
@@ -134,14 +134,14 @@ class Issue extends Component {
 
                                                         this.setState({
                                                             issue: issue,
-                                                            hasChange: changed
+                                                            priorityHasChange: changed
                                                         });
                                                     } }/>)
                                             }
                                         </Grid>
                                         <Grid>
                                             {
-                                                hasChange && !saving && (
+                                                priorityHasChange && !savingPriority && (
                                                     <MuiThemeProvider theme={themeButton}>
                                                         <Button className={classes.buttonIcon}
                                                                 color="primary"
@@ -149,13 +149,13 @@ class Issue extends Component {
                                                                 onClick={ event => {
 
                                                                     this.setState({
-                                                                        saving: true,
+                                                                        savingPriority: true,
                                                                     });
 
                                                                     this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
                                                                         this.setState({
-                                                                            hasChange: false,
-                                                                            saving: false,
+                                                                            priorityHasChange: false,
+                                                                            savingPriority: false,
                                                                             originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
                                                                         });
 
@@ -164,7 +164,7 @@ class Issue extends Component {
                                                                         }
                                                                     }).catch( error => {
                                                                         this.setState({
-                                                                            saving: false,
+                                                                            savingPriority: false,
                                                                         });
 
                                                                         console.log('Erro ao salvar', error);
@@ -182,7 +182,7 @@ class Issue extends Component {
 
                                                                     this.setState({
                                                                         issue: issue,
-                                                                        hasChange: false
+                                                                        priorityHasChange: false
                                                                     });
                                                                 }}>
                                                             <CloseIcon/>
@@ -191,7 +191,7 @@ class Issue extends Component {
                                                 )
                                             }
                                             {
-                                                saving && (
+                                                savingPriority && (
                                                     <CircularProgress style={{marginLeft: '10px'}} size={24} />
                                                 )
                                             }
@@ -290,10 +290,16 @@ class Issue extends Component {
                                             </Grid>
                                         </Grid>
                                         <Grid item md={4}>
-                                            <span className={classes.fieldLabel}>Anexos:</span>
-                                            <Grid container spacing={8}>
+                                            <Grid item container spacing={8} style={{marginBottom: '8px'}}>
+                                                <span className={classes.fieldLabel}>Informativo:</span>
                                                 {
-                                                    renderAnexos(this.props.fetchAttachment, issue)
+                                                    renderAttachment(this.props.fetchAttachment, issue, issue ? issue.infoFiles: [])
+                                                }
+                                            </Grid>
+                                            <Grid item container spacing={8}>
+                                                <span className={classes.fieldLabel}>Anexos:</span>
+                                                {
+                                                    renderAttachment(this.props.fetchAttachment, issue, issue ? issue.attachment: [])
                                                 }
                                             </Grid>
                                         </Grid>
