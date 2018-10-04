@@ -9,10 +9,12 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import DoneIcon from '@material-ui/icons/Done';
 import CloseIcon from '@material-ui/icons/Close';
+import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
+import RemoveCircleOutline from '@material-ui/icons/RemoveCircleOutline';
 import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
 import SelectComp from './SelectComp';
-import {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue} from "../actions";
+import {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue, fetchSprintList} from "../actions";
 
 const themeButton = createMuiTheme({
     palette: {
@@ -37,11 +39,20 @@ const styles = theme => ({
     fieldLabel: {
         color: '#5e6c84'
     },
+    labelSubTile: {
+        color: '#5e6c84',
+        marginBottom: '10px',
+        textAlign: 'center',
+        fontSize: '18px',
+    },
     progress: {
         margin: theme.spacing.unit * 2,
     },
     buttonIcon:{
-        marginTop: '-5px'
+        marginTop: '-5px',
+    },
+    blockAttaches:{
+        marginBottom: '8px',
     }
 });
 
@@ -53,8 +64,10 @@ class Issue extends Component {
             originalIssue: props.issueObj ? JSON.parse(JSON.stringify(props.issueObj)) : null,
             issue : props.issueObj,
             priority_list: props.priority_list,
+            sprint_list: props.sprint_list,
             priorityHasChange: false,
             savingPriority: false,
+            savingSprint: false,
             loading: false,
         };
     }
@@ -67,6 +80,12 @@ class Issue extends Component {
         if(!this.props.priority_list){
             this.props.fetchPriorityList().then(response => {
                 this.setState({ priority_list: this.props.priority_list });
+            });
+        }
+
+        if(!this.props.sprint_list){
+            this.props.fetchSprintList().then(response => {
+                this.setState({ sprint_list: this.props.sprint_list });
             });
         }
 
@@ -87,10 +106,10 @@ class Issue extends Component {
     
     render (){
         const { classes, theme } = this.props;
-        const { issue, originalIssue, priorityHasChange, savingPriority } = this.state;
+        const { issue, originalIssue, priorityHasChange, savingPriority, savingSprint } = this.state;
 
         function renderAttachment(callFunc, issue, listAttach) {
-            return !issue ? '' : listAttach.map( attach => {
+            return !issue || !listAttach ? '' : listAttach.map( attach => {
                 return(
                     <Grid item sm={12} key={attach.content}>
                         <a href={'#'} onClick={(event) => {
@@ -260,7 +279,96 @@ class Issue extends Component {
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
                                         <Grid>
                                             <span className={classes.fieldLabel}>Sprint:</span>
-                                            {issue && issue.sprint ? ' ' + issue.sprint.name : '' }
+                                            {!savingSprint && issue && issue.sprint ? ' ' + issue.sprint.name : '' }
+                                            {
+                                                !savingSprint && (
+                                                    <MuiThemeProvider theme={themeButton}>
+                                                        {
+                                                            issue && !issue.sprint && (
+                                                                <Button className={classes.buttonIcon}
+                                                                        color="primary"
+                                                                        size="small"
+                                                                        onClick={ event => {
+                                                                            let sprintFuture = this.state.sprint_list.filter(sprint => sprint.canEdit);
+
+                                                                            issue.sprint = sprintFuture.length > 0 ? sprintFuture[0] : null;
+
+                                                                            if(issue.sprint){
+                                                                                this.setState({
+                                                                                    savingSprint: true,
+                                                                                });
+
+                                                                                this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
+                                                                                    this.setState({
+                                                                                        savingSprint: false,
+                                                                                        originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                                    });
+
+                                                                                    if(this.props.onIssueChange){
+                                                                                        this.props.onIssueChange(this.state.issue);
+                                                                                    }
+                                                                                }).catch( error => {
+                                                                                    this.setState({
+                                                                                        savingPriority: false,
+                                                                                    });
+
+                                                                                    console.log('Erro ao salvar', error);
+                                                                                    alert('Não foi possível salvar as alterações.');
+                                                                                });
+                                                                            } else{
+                                                                                alert('Não há sprint disponível para associar a atividade.');
+                                                                            }
+                                                                        }}>
+                                                                    <AddCircleOutline/>
+                                                                </Button>
+                                                            )
+                                                        }
+                                                        {
+                                                            issue && issue.sprint && issue.sprint.canEdit && (
+                                                                <Button className={classes.buttonIcon}
+                                                                        color="secondary"
+                                                                        size="small"
+                                                                        onClick={event => {
+
+                                                                            if(confirm(`Deseja desassociar essa atividade da sprint ${issue.sprint.name}?`)){
+                                                                                this.setState({
+                                                                                    savingSprint: true,
+                                                                                });
+
+                                                                                issue.sprint = null;
+
+                                                                                this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
+                                                                                    this.setState({
+                                                                                        savingSprint: false,
+                                                                                        originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                                    });
+
+                                                                                    if(this.props.onIssueChange){
+                                                                                        this.props.onIssueChange(this.state.issue);
+                                                                                    }
+                                                                                }).catch( error => {
+                                                                                    this.setState({
+                                                                                        savingSprint: false,
+                                                                                        issue: originalIssue,
+                                                                                    });
+
+                                                                                    console.log('Erro ao salvar', error);
+                                                                                    alert('Não foi possível salvar as alterações.');
+                                                                                });
+                                                                            }
+                                                                        }}>
+                                                                    <RemoveCircleOutline/>
+                                                                </Button>
+                                                            )
+                                                        }
+                                                    </MuiThemeProvider>
+                                                )
+                                            }
+                                            {
+                                                savingSprint && (
+                                                    <CircularProgress style={{marginLeft: '10px'}} size={24} />
+                                                )
+                                            }
                                         </Grid>
                                     </Grid>
                                 </Grid>
@@ -290,18 +398,35 @@ class Issue extends Component {
                                             </Grid>
                                         </Grid>
                                         <Grid item md={4}>
-                                            <Grid item container spacing={8} style={{marginBottom: '8px'}}>
-                                                <span className={classes.fieldLabel}>Informativo:</span>
-                                                {
-                                                    renderAttachment(this.props.fetchAttachment, issue, issue ? issue.infoFiles: [])
-                                                }
-                                            </Grid>
-                                            <Grid item container spacing={8}>
-                                                <span className={classes.fieldLabel}>Anexos:</span>
-                                                {
-                                                    renderAttachment(this.props.fetchAttachment, issue, issue ? issue.attachment: [])
-                                                }
-                                            </Grid>
+                                            <Paper  className={classes.paper}>
+                                                <div className={classes.labelSubTile}>
+                                                    <span>Anexos</span>
+                                                </div>
+                                                <Grid item container spacing={8} className={classes.blockAttaches}>
+                                                    <span className={classes.fieldLabel}>Documento:</span>
+                                                    {
+                                                        renderAttachment(this.props.fetchAttachment, issue, issue ? issue.docAttaches: [])
+                                                    }
+                                                </Grid>
+                                                <Grid item container spacing={8} className={classes.blockAttaches}>
+                                                    <span className={classes.fieldLabel}>Informativo:</span>
+                                                    {
+                                                        renderAttachment(this.props.fetchAttachment, issue, issue ? issue.infoAttaches: [])
+                                                    }
+                                                </Grid>
+                                                <Grid item container spacing={8} className={classes.blockAttaches}>
+                                                    <span className={classes.fieldLabel}>Manual:</span>
+                                                    {
+                                                        renderAttachment(this.props.fetchAttachment, issue, issue ? issue.manualAttaches: [])
+                                                    }
+                                                </Grid>
+                                                <Grid item container spacing={8} className={classes.blockAttaches}>
+                                                    <span className={classes.fieldLabel}>Outros:</span>
+                                                    {
+                                                        renderAttachment(this.props.fetchAttachment, issue, issue ? issue.attachment: [])
+                                                    }
+                                                </Grid>
+                                            </Paper>
                                         </Grid>
                                     </Grid>
                                 </Typography>
@@ -320,8 +445,12 @@ Issue.propTypes = {
     onIssueChange: PropTypes.func,
 };
 
-function mapStateToProps({issue, priority_list}) {
-    return {issue, priority_list};
+function mapStateToProps({issue, priority_list, sprint_list}) {
+    return {
+        issue,
+        priority_list,
+        sprint_list,
+    };
 }
 
-export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue}) (withStyles(styles, { withTheme: true })(Issue));
+export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue, fetchSprintList}) (withStyles(styles, { withTheme: true })(Issue));
