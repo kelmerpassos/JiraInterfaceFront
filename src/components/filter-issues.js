@@ -13,7 +13,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
-import { fetchProjectComponents, fetchPriorityList, fetchSprintList, fetchStatusList } from "../actions";
+import { fetchPriorityList, fetchSprintList, fetchStatusList, fetchIssueEditMeta } from "../actions";
 
 const styles = theme => ({
     root: {
@@ -65,8 +65,8 @@ class FilterIssues extends Component {
         super(props);
 
         this.state = {
-            groups: [],
-            selectedGroups: [],
+            departments:[],
+            selectedDepartments: [],
             priority_list: props.priority_list,
             selectedPriorities: [],
             status_list: props.status_list,
@@ -86,11 +86,11 @@ class FilterIssues extends Component {
             status = '',
             sprint = '',
             noSprint = '',
-            group = '',
+            department = '',
             search = '',
             key = '',
             filter = '',
-            backlogId = -1,
+            backlogId,
             sprintIdList = this.state.selectedSprintsID.slice(0, this.state.selectedSprintsID.length +1);
 
         if(this.state.selectedPriorities.length > 0){
@@ -131,8 +131,8 @@ class FilterIssues extends Component {
             sprint = `(${sprint} ${noSprint})`;
         }
 
-        if(this.state.selectedGroups.length > 0){
-            group = `component in (${this.state.selectedGroups.map(item => `"${item}"`).toString()})`;
+        if(this.state.selectedDepartments.length > 0){
+            department = `Departamento in (${this.state.selectedDepartments.map(item => `"${item}"`).toString()})`;
         }
 
         if(this.state.search.length > 2){
@@ -159,7 +159,7 @@ class FilterIssues extends Component {
         addFilter(priority);
         addFilter(status);
         addFilter(sprint);
-        addFilter(group);
+        addFilter(department);
         addFilter(search);
         addFilter(key);
 
@@ -171,9 +171,9 @@ class FilterIssues extends Component {
         }
     };
 
-    handleGroupChange = event => {
+    handleDepartmentChange = event => {
         this.setState({
-            selectedGroups: event.target.value,
+            selectedDepartments: event.target.value,
         });
     };
 
@@ -215,9 +215,9 @@ class FilterIssues extends Component {
 
     componentDidMount(){
 
-        if(!this.props.groups){
-            this.props.fetchProjectComponents().then(response => {
-                this.setState({ groups: this.props.groups });
+        if(!this.props.departments){
+            this.props.fetchIssueEditMeta().then(response => {
+                this.setState({ departments: this.props.departments });
             });
         }
 
@@ -289,20 +289,20 @@ class FilterIssues extends Component {
                         </Grid>
                         <Grid item>
                             <FormControl className={classes.formControl}>
-                                <InputLabel htmlFor="select-group">Grupo</InputLabel>
+                                <InputLabel htmlFor="select-department">Departamento</InputLabel>
                                 <Select
                                     multiple
                                     className={classes.select}
-                                    value={this.state.selectedGroups}
-                                    onChange={this.handleGroupChange}
-                                    input={<Input id="select-group" />}
+                                    value={this.state.selectedDepartments}
+                                    onChange={this.handleDepartmentChange}
+                                    input={<Input id="select-department" />}
                                     renderValue={selected => selected.join(', ')}
                                     MenuProps={MenuProps}
                                 >
-                                    { this.state.groups && this.state.groups.map(group => (
-                                        <MenuItem key={group.id} value={group.name}>
-                                            <Checkbox checked={this.state.selectedGroups.indexOf(group.name) > -1} />
-                                            <ListItemText primary={group.name} />
+                                    { this.state.departments && this.state.departments.map(department => (
+                                        <MenuItem key={department.id} value={department.value}>
+                                            <Checkbox checked={this.state.selectedDepartments.indexOf(department.value) > -1} />
+                                            <ListItemText primary={department.value} />
                                         </MenuItem>
                                     ))}
                                 </Select>
@@ -405,12 +405,13 @@ FilterIssues.propTypes = {
     onChangeFilter: PropTypes.func.isRequired,
 };
 
-function mapStateToProps(state) {
-    return { groups: state.components,
-             priority_list: state.priority_list,
-             sprint_list: state.sprint_list,
-             status_list: state.status_list,
+function mapStateToProps({issue_editmeta, priority_list, sprint_list, status_list}) {
+    return { departments: issue_editmeta.departments,
+             priority_list,
+             sprint_list,
+             status_list,
     };
 }
 
-export default connect(mapStateToProps, { fetchProjectComponents, fetchPriorityList, fetchSprintList, fetchStatusList }) (withStyles(styles, { withTheme: true })(FilterIssues));
+export default connect(mapStateToProps, { fetchPriorityList, fetchSprintList, fetchStatusList,
+                       fetchIssueEditMeta}) (withStyles(styles, { withTheme: true })(FilterIssues));

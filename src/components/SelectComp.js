@@ -58,13 +58,13 @@ class SelectComp extends Component {
                         value={this.state.index}
                         onChange={this.handleChange}
                     >
-                        <MenuItem value={"-1"}>
-                            {'Não Selecionado'}
-                        </MenuItem>
+                        {/*<MenuItem value={"-1"}>*/}
+                            {/*{'Não Selecionado'}*/}
+                        {/*</MenuItem>*/}
 
                         {this.props.listValues && (this.props.listValues.map((option, index) => (
                             <MenuItem key={index} value={index}>
-                                {option.name}
+                                {option[this.props.valueProp]}
                             </MenuItem>
                         )))}
                     </Select>
@@ -78,6 +78,7 @@ SelectComp.propTypes = {
     classes: PropTypes.object.isRequired,
     listValues: PropTypes.array,
     updateValue: PropTypes.func,
+    valueProp: PropTypes.string,
 };
 
 export default withStyles(styles, { withTheme: true })(SelectComp);

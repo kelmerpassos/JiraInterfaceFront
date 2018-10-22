@@ -1,4 +1,4 @@
-import {ROOT_URL, PROJECT_ID, BOARD_ID} from '../config';
+import {ROOT_URL, PROJECT_ID, BOARD_ID, ISSUE_METAKEY} from '../config';
 import axios from 'axios';
 
 export const SPRINT_ISSUES = 'sprint_issues',
@@ -8,6 +8,7 @@ export const SPRINT_ISSUES = 'sprint_issues',
              ISSUE = 'issue',
              ISSUE_UPDATE = 'issue_update',
              ISSUE_ATTACH = 'issue_attach',
+             ISSUE_EDITMETA = 'issue_editmeta',
              PRIORITY_LIST = 'priority_list',
              STATUS_LIST = 'status_list';
 
@@ -65,10 +66,35 @@ export function fetchIssue(key) {
 }
 
 export function updateIssue(key, issue) {
+    issue.lastUserUpdate = 'Tabajara';
+
     const request = axios.put(`${ROOT_URL}/issues/${key}`, issue);
 
     return {
         type: ISSUE_UPDATE,
+        payload: request
+    };
+}
+
+export function updateIssueField(key, issue, filed) {
+    let updateIssue = {
+            [filed]: issue[filed],
+            lastUserUpdate: 'Tabajara',
+        };
+
+    const request = axios.put(`${ROOT_URL}/issues/${key}`, updateIssue);
+
+    return {
+        type: ISSUE_UPDATE,
+        payload: request
+    };
+}
+
+export function fetchIssueEditMeta() {
+    const request = axios.get(`${ROOT_URL}/issues/${ISSUE_METAKEY}/editmeta`);
+
+    return {
+        type: ISSUE_EDITMETA,
         payload: request
     };
 }

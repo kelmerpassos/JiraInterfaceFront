@@ -13,8 +13,16 @@ import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
 import RemoveCircleOutline from '@material-ui/icons/RemoveCircleOutline';
 import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
+import { getPropertyName} from '../utils';
 import SelectComp from './SelectComp';
-import {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue, fetchSprintList} from "../actions";
+import {
+    fetchIssue,
+    fetchAttachment,
+    fetchPriorityList,
+    updateIssueField,
+    fetchSprintList,
+    fetchIssueEditMeta
+} from "../actions";
 
 const themeButton = createMuiTheme({
     palette: {
@@ -64,10 +72,19 @@ class Issue extends Component {
             originalIssue: props.issueObj ? JSON.parse(JSON.stringify(props.issueObj)) : null,
             issue : props.issueObj,
             priority_list: props.priority_list,
-            sprint_list: props.sprint_list,
             priorityHasChange: false,
-            savingPriority: false,
+            prioritySaving: false,
+            sprint_list: props.sprint_list,
             savingSprint: false,
+            departments: props.departments,
+            departmentHasChange: false,
+            departmentSaving: false,
+            productOwners: props.productOwners,
+            productOwnerHasChange: false,
+            productOwnerSaving: false,
+            requireHomologValues: props.requireHomologValues,
+            requireHomoHasChange: false,
+            requireHomoSaving: false,
             loading: false,
         };
     }
@@ -89,6 +106,16 @@ class Issue extends Component {
             });
         }
 
+        if(!this.props.productOwners){
+            this.props.fetchIssueEditMeta().then(response => {
+                this.setState({
+                    departments: this.props.departments,
+                    productOwners: this.props.productOwners,
+                    requireHomologValues: this.props.requireHomologValues,
+                });
+            });
+        }
+
         if(key){
             this.setState({loading: true});
             this.props.fetchIssue(key).then(response => {
@@ -106,7 +133,8 @@ class Issue extends Component {
     
     render (){
         const { classes, theme } = this.props;
-        const { issue, originalIssue, priorityHasChange, savingPriority, savingSprint } = this.state;
+        const { issue, originalIssue, priorityHasChange, prioritySaving, savingSprint, requireHomoHasChange,
+                requireHomoSaving, productOwnerHasChange, productOwnerSaving } = this.state;
 
         function renderAttachment(callFunc, issue, listAttach) {
             return !issue || !listAttach ? '' : listAttach.map( attach => {
@@ -145,6 +173,7 @@ class Issue extends Component {
                                                 <SelectComp
                                                     value={issue.priority}
                                                     listValues={this.state.priority_list}
+                                                    valueProp={'name'}
                                                     updateValue={(value) => {
                                                         const changed = originalIssue.priority.id !== value.id;
 
@@ -160,7 +189,7 @@ class Issue extends Component {
                                         </Grid>
                                         <Grid>
                                             {
-                                                priorityHasChange && !savingPriority && (
+                                                priorityHasChange && !prioritySaving && (
                                                     <MuiThemeProvider theme={themeButton}>
                                                         <Button className={classes.buttonIcon}
                                                                 color="primary"
@@ -168,13 +197,14 @@ class Issue extends Component {
                                                                 onClick={ event => {
 
                                                                     this.setState({
-                                                                        savingPriority: true,
+                                                                        prioritySaving: true,
                                                                     });
 
-                                                                    this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
+                                                                    this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                                                getPropertyName(() => this.state.issue.priority)).then( response => {
                                                                         this.setState({
                                                                             priorityHasChange: false,
-                                                                            savingPriority: false,
+                                                                            prioritySaving: false,
                                                                             originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
                                                                         });
 
@@ -183,7 +213,7 @@ class Issue extends Component {
                                                                         }
                                                                     }).catch( error => {
                                                                         this.setState({
-                                                                            savingPriority: false,
+                                                                            prioritySaving: false,
                                                                         });
 
                                                                         console.log('Erro ao salvar', error);
@@ -210,7 +240,7 @@ class Issue extends Component {
                                                 )
                                             }
                                             {
-                                                savingPriority && (
+                                                prioritySaving && (
                                                     <CircularProgress style={{marginLeft: '10px'}} size={24} />
                                                 )
                                             }
@@ -245,7 +275,84 @@ class Issue extends Component {
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
                                         <Grid>
                                             <span className={classes.fieldLabel}>Product Owner:</span>
-                                            {issue && issue.productOwner ? ' ' + issue.productOwner : '' }
+                                        </Grid>
+                                        <Grid>
+                                            { issue && issue.productOwner && (
+                                                <SelectComp
+                                                    value={issue.productOwner}
+                                                    listValues={this.state.productOwners}
+                                                    valueProp={'value'}
+                                                    updateValue={(value) => {
+                                                        const changed = originalIssue.productOwner.id !== value.id;
+
+                                                        issue.productOwner.id = value.id;
+                                                        issue.productOwner.value = value.value;
+
+                                                        this.setState({
+                                                            issue: issue,
+                                                            productOwnerHasChange: changed
+                                                        });
+                                                    } }
+                                                />)
+                                            }
+                                        </Grid>
+                                        <Grid>
+                                            {
+                                                productOwnerHasChange && !productOwnerSaving && (
+                                                    <MuiThemeProvider theme={themeButton}>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="primary"
+                                                                size="small"
+                                                                onClick={ event => {
+
+                                                                    this.setState({
+                                                                        productOwnerSaving: true,
+                                                                    });
+
+                                                                    this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                        getPropertyName(() => this.state.issue.productOwner)).then( response => {
+                                                                        this.setState({
+                                                                            productOwnerHasChange: false,
+                                                                            productOwnerSaving: false,
+                                                                            originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                        });
+
+                                                                        if(this.props.onIssueChange){
+                                                                            this.props.onIssueChange(this.state.issue);
+                                                                        }
+                                                                    }).catch( error => {
+                                                                        this.setState({
+                                                                            productOwnerSaving: false,
+                                                                        });
+
+                                                                        console.log('Erro ao salvar', error);
+                                                                        alert('Não foi possível salvar as alterações.');
+                                                                    });
+                                                                }}>
+                                                            <DoneIcon/>
+                                                        </Button>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="secondary"
+                                                                size="small"
+                                                                onClick={event => {
+                                                                    issue.productOwner.id = originalIssue.productOwner.id;
+                                                                    issue.productOwner.value = originalIssue.productOwner.value;
+
+                                                                    this.setState({
+                                                                        issue: issue,
+                                                                        productOwnerHasChange: false
+                                                                    });
+                                                                }}>
+                                                            <CloseIcon/>
+                                                        </Button>
+                                                    </MuiThemeProvider>
+                                                )
+                                            }
+                                            {
+                                                productOwnerSaving && (
+                                                    <CircularProgress style={{marginLeft: '10px'}} size={24} />
+                                                )
+                                            }
                                         </Grid>
                                     </Grid>
                                 </Grid>
@@ -272,8 +379,8 @@ class Issue extends Component {
                                 <Grid item sm={12} container spacing={8}>
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
                                         <Grid>
-                                            <span className={classes.fieldLabel}>Grupo:</span>
-                                            {issue && issue.groupComponents ? ' ' + issue.groupComponents : '' }
+                                            <span className={classes.fieldLabel}>Departamento:</span>
+                                            {issue && issue.groupDepartments ? ' ' + issue.groupDepartments : '' }
                                         </Grid>
                                     </Grid>
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
@@ -298,7 +405,8 @@ class Issue extends Component {
                                                                                     savingSprint: true,
                                                                                 });
 
-                                                                                this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
+                                                                                this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                                                            getPropertyName(() => this.state.issue.sprint)).then( response => {
                                                                                     this.setState({
                                                                                         savingSprint: false,
                                                                                         originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
@@ -309,7 +417,7 @@ class Issue extends Component {
                                                                                     }
                                                                                 }).catch( error => {
                                                                                     this.setState({
-                                                                                        savingPriority: false,
+                                                                                        prioritySaving: false,
                                                                                     });
 
                                                                                     console.log('Erro ao salvar', error);
@@ -335,9 +443,10 @@ class Issue extends Component {
                                                                                     savingSprint: true,
                                                                                 });
 
-                                                                                issue.sprint = null;
+                                                                                issue.sprint.id = null;
 
-                                                                                this.props.updateIssue(this.state.issue.key, this.state.issue).then( response => {
+                                                                                this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                                                            getPropertyName(() => this.state.issue.sprint)).then( response => {
                                                                                     this.setState({
                                                                                         savingSprint: false,
                                                                                         originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
@@ -371,6 +480,89 @@ class Issue extends Component {
                                             }
                                         </Grid>
                                     </Grid>
+                                    <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid>
+                                            <span className={classes.fieldLabel}>Requer Homologação:</span>
+                                        </Grid>
+                                        <Grid>
+                                            { issue && issue.requireHomologation && (
+                                                <SelectComp
+                                                    value={issue.requireHomologation}
+                                                    listValues={this.state.requireHomologValues}
+                                                    valueProp={'value'}
+                                                    updateValue={(newValue) => {
+                                                        const changed = originalIssue.requireHomologation.id !== newValue.id;
+
+                                                        issue.requireHomologation.id = newValue.id;
+                                                        issue.requireHomologation.value = newValue.value;
+
+                                                        this.setState({
+                                                            issue: issue,
+                                                            requireHomoHasChange: changed
+                                                        });
+                                                    } }
+                                                />)
+                                            }
+                                        </Grid>
+                                        <Grid>
+                                            {
+                                                requireHomoHasChange && !requireHomoSaving && (
+                                                    <MuiThemeProvider theme={themeButton}>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="primary"
+                                                                size="small"
+                                                                onClick={ event => {
+
+                                                                    this.setState({
+                                                                        requireHomoSaving: true,
+                                                                    });
+
+                                                                    this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                                                getPropertyName(() => this.state.issue.requireHomologation)).then( response => {
+                                                                        this.setState({
+                                                                            requireHomoHasChange: false,
+                                                                            requireHomoSaving: false,
+                                                                            originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                        });
+
+                                                                        if(this.props.onIssueChange){
+                                                                            this.props.onIssueChange(this.state.issue);
+                                                                        }
+                                                                    }).catch( error => {
+                                                                        this.setState({
+                                                                            requireHomoSaving: false,
+                                                                        });
+
+                                                                        console.log('Erro ao salvar', error);
+                                                                        alert('Não foi possível salvar as alterações.');
+                                                                    });
+                                                                }}>
+                                                            <DoneIcon/>
+                                                        </Button>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="secondary"
+                                                                size="small"
+                                                                onClick={event => {
+                                                                    issue.requireHomologation.id = originalIssue.requireHomologation.id;
+                                                                    issue.requireHomologation.value = originalIssue.requireHomologation.value;
+
+                                                                    this.setState({
+                                                                        issue: issue,
+                                                                        requireHomoHasChange: false
+                                                                    });
+                                                                }}>
+                                                            <CloseIcon/>
+                                                        </Button>
+                                                    </MuiThemeProvider>
+                                                )
+                                            }
+                                            {
+                                                requireHomoSaving && (
+                                                    <CircularProgress style={{marginLeft: '10px'}} size={24} />
+                                                )
+                                            }
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                             </Typography>
                         </Grid>
@@ -388,8 +580,8 @@ class Issue extends Component {
                                         <Grid item md={8}>
                                             <Grid container spacing={8}>
                                                 <Grid item sm={12}>
-                                                    <span className={classes.fieldLabel}>Solução/Teste:</span>
-                                                    <span dangerouslySetInnerHTML={{__html: issue && issue.solution_test ? issue.solution_test : '' }}/>
+                                                    <span className={classes.fieldLabel}>Solução:</span>
+                                                    <span dangerouslySetInnerHTML={{__html: issue && issue.solution ? issue.solution : '' }}/>
                                                 </Grid>
                                                 <Grid item sm={12}>
                                                     <span className={classes.fieldLabel}>Descrição:</span>
@@ -445,12 +637,17 @@ Issue.propTypes = {
     onIssueChange: PropTypes.func,
 };
 
-function mapStateToProps({issue, priority_list, sprint_list}) {
+function mapStateToProps({issue, priority_list, sprint_list, issue_editmeta}) {
     return {
         issue,
         priority_list,
         sprint_list,
+        issue_editmeta,
+        departments: issue_editmeta.departments,
+        productOwners: issue_editmeta.productOwners,
+        requireHomologValues: issue_editmeta.requireHomologValues,
     };
 }
 
-export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorityList, updateIssue, fetchSprintList}) (withStyles(styles, { withTheme: true })(Issue));
+export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorityList, updateIssueField, fetchIssueEditMeta,
+                       fetchSprintList}) (withStyles(styles, { withTheme: true })(Issue));
