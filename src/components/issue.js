@@ -76,7 +76,7 @@ class Issue extends Component {
             prioritySaving: false,
             sprint_list: props.sprint_list,
             savingSprint: false,
-            departments: props.departments,
+            departments_list: props.departments_list,
             departmentHasChange: false,
             departmentSaving: false,
             productOwners: props.productOwners,
@@ -109,7 +109,7 @@ class Issue extends Component {
         if(!this.props.productOwners){
             this.props.fetchIssueEditMeta().then(response => {
                 this.setState({
-                    departments: this.props.departments,
+                    departments_list: this.props.departments_list,
                     productOwners: this.props.productOwners,
                     requireHomologValues: this.props.requireHomologValues,
                 });
@@ -134,7 +134,8 @@ class Issue extends Component {
     render (){
         const { classes, theme } = this.props;
         const { issue, originalIssue, priorityHasChange, prioritySaving, savingSprint, requireHomoHasChange,
-                requireHomoSaving, productOwnerHasChange, productOwnerSaving } = this.state;
+                requireHomoSaving, productOwnerHasChange, productOwnerSaving, departmentHasChange,
+                departmentSaving} = this.state;
 
         function renderAttachment(callFunc, issue, listAttach) {
             return !issue || !listAttach ? '' : listAttach.map( attach => {
@@ -184,6 +185,7 @@ class Issue extends Component {
                                                             issue: issue,
                                                             priorityHasChange: changed
                                                         });
+
                                                     } }/>)
                                             }
                                         </Grid>
@@ -292,6 +294,7 @@ class Issue extends Component {
                                                             issue: issue,
                                                             productOwnerHasChange: changed
                                                         });
+
                                                     } }
                                                 />)
                                             }
@@ -380,7 +383,105 @@ class Issue extends Component {
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
                                         <Grid>
                                             <span className={classes.fieldLabel}>Departamento:</span>
-                                            {issue && issue.groupDepartments ? ' ' + issue.groupDepartments : '' }
+                                        </Grid>
+                                        <Grid>
+                                            { issue && issue.departments && (
+                                                <SelectComp
+                                                    multipleSelection
+                                                    value={issue.departments}
+                                                    listValues={this.state.departments_list}
+                                                    valueProp={'value'}
+                                                    updateValue={(value) => {
+                                                        let obj = null,
+                                                            i,
+                                                            changed = value.length !== originalIssue.departments.length;
+
+                                                        if(!changed){
+                                                            for(i = 0; i < originalIssue.departments.length; i++){
+                                                                obj = value.find((option, index, array) => {
+                                                                    return option.id === originalIssue.departments[i].id
+                                                                });
+
+                                                                if(obj){
+                                                                    obj.selected = true;
+                                                                }
+                                                            }
+
+                                                            for(i = 0; i < value.length; i++){
+                                                                changed = !value[i].selected;
+                                                                if(changed){
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+
+                                                        issue.departments = value;
+
+                                                        this.setState({
+                                                            issue: issue,
+                                                            departmentHasChange: changed
+                                                        });
+
+                                                    } }
+                                                />
+                                            )}
+                                        </Grid>
+                                        <Grid>
+                                            {
+                                                departmentHasChange && !departmentSaving && (
+                                                    <MuiThemeProvider theme={themeButton}>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="primary"
+                                                                size="small"
+                                                                onClick={ event => {
+
+                                                                    this.setState({
+                                                                        departmentSaving: true,
+                                                                    });
+
+                                                                    this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                        getPropertyName(() => this.state.issue.departments)).then( response => {
+                                                                        this.setState({
+                                                                            departmentHasChange: false,
+                                                                            departmentSaving: false,
+                                                                            originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                        });
+
+                                                                        if(this.props.onIssueChange){
+                                                                            this.props.onIssueChange(this.state.issue);
+                                                                        }
+                                                                    }).catch( error => {
+                                                                        this.setState({
+                                                                            departmentSaving: false,
+                                                                        });
+
+                                                                        console.log('Erro ao salvar', error);
+                                                                        alert('Não foi possível salvar as alterações.');
+                                                                    });
+                                                                }}>
+                                                            <DoneIcon/>
+                                                        </Button>
+                                                        <Button className={classes.buttonIcon}
+                                                                color="secondary"
+                                                                size="small"
+                                                                onClick={event => {
+                                                                    issue.departments = JSON.parse(JSON.stringify(originalIssue.departments));
+
+                                                                    this.setState({
+                                                                        issue: issue,
+                                                                        departmentHasChange: false,
+                                                                    });
+                                                                }}>
+                                                            <CloseIcon/>
+                                                        </Button>
+                                                    </MuiThemeProvider>
+                                                )
+                                            }
+                                            {
+                                                departmentSaving && (
+                                                    <CircularProgress style={{marginLeft: '10px'}} size={24} />
+                                                )
+                                            }
                                         </Grid>
                                     </Grid>
                                     <Grid item md={4} sm={6} justify={"flex-start"} container>
@@ -643,7 +744,7 @@ function mapStateToProps({issue, priority_list, sprint_list, issue_editmeta}) {
         priority_list,
         sprint_list,
         issue_editmeta,
-        departments: issue_editmeta.departments,
+        departments_list: issue_editmeta.departments,
         productOwners: issue_editmeta.productOwners,
         requireHomologValues: issue_editmeta.requireHomologValues,
     };

@@ -20,6 +20,10 @@ export function IssueReducer (state = null, action) {
                 for(let i = 0; i < action.payload.data.attachment.length; i++){
                     attach = action.payload.data.attachment[i];
 
+                    if(/\[OCULTAR\]/gi.test(attach.filename)){
+                        attach.moved = true;
+                    }
+
                     if(/\[INFO\]/gi.test(attach.filename)){
                         attach.filename = attach.filename.replace(/\[INFO\]/gi,'');
                         attach.moved = true;
@@ -43,7 +47,7 @@ export function IssueReducer (state = null, action) {
 
                 action.payload.data.groupComponents = action.payload.data.components.map((component) =>" "+ component.name).toString();
                 action.payload.data.groupFixVersions = action.payload.data.fixVersions.map((version) =>" "+ version.name).toString();
-                action.payload.data.groupDepartments = action.payload.data.departments.map((department) =>" "+ department.name).toString();
+                action.payload.data.groupDepartments = action.payload.data.departments.map((department) =>" "+ department.value).toString();
 
                 return action.payload.data;
             }
@@ -60,7 +64,7 @@ export function IssueListReducer (state = null, action) {
 
                 for (let i = 0; i < action.payload.data.length; i++) {
                     action.payload.data[i].groupComponents = action.payload.data[i].components.map((component) =>" "+ component.name).toString();
-                    action.payload.data[i].groupDepartments = action.payload.data[i].departments.map((department) =>" "+ department.name).toString();
+                    action.payload.data[i].groupDepartments = action.payload.data[i].departments.map((department) =>" "+ department.value).toString();
                     action.payload.data[i].groupFixVersions = action.payload.data[i].fixVersions.map((version) =>" "+ version.name).toString();
                     action.payload.data[i].priorityId = action.payload.data[i].priority ? action.payload.data[i].priority.id : -1;
                 }

@@ -6,23 +6,8 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import Typography from '@material-ui/core/Typography';
-
 import ListIssues  from './list-issues';
 import Issue from "./issue";
-
-function TabContainer({ children, dir }) {
-    return (
-        <Typography component="div" dir={dir} style={{ padding: 8 * 3 }}>
-            {children}
-        </Typography>
-    );
-}
-
-TabContainer.propTypes = {
-    children: PropTypes.node.isRequired,
-    dir: PropTypes.string.isRequired,
-};
 
 const styles = theme => ({
     root: {
