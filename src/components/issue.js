@@ -548,6 +548,7 @@ class Issue extends Component {
 
                                                                                 this.props.updateIssueField(this.state.issue.key, this.state.issue,
                                                                                                             getPropertyName(() => this.state.issue.sprint)).then( response => {
+                                                                                    issue.sprint = null;
                                                                                     this.setState({
                                                                                         savingSprint: false,
                                                                                         originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
