@@ -13,6 +13,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
+import HighlightOff from '@material-ui/icons/HighlightOff';
 import { fetchPriorityList, fetchSprintList, fetchStatusList, fetchIssueEditMeta } from "../actions";
 
 const styles = theme => ({
@@ -213,6 +214,18 @@ class FilterIssues extends Component {
         });
     };
 
+    handleClearFilterClick = event => {
+        this.setState({
+            selectedDepartments: [],
+            selectedPriorities: [],
+            selectedStatus: [],
+            selectedSprints: [],
+            selectedSprintsID: [],
+            search: '',
+            key: '',
+        });
+    };
+
     componentDidMount(){
 
         if(!this.props.departments){
@@ -381,6 +394,16 @@ class FilterIssues extends Component {
                                     }}
                                 />
                             </FormControl>
+                        </Grid>
+                        <Grid item>
+                            <IconButton
+                                color="primary"
+                                className={classes.button}
+                                aria-label="Limpar filtros"
+                                onClick={this.handleClearFilterClick}
+                            >
+                                <HighlightOff />
+                            </IconButton>
                         </Grid>
                     </Grid>
                     <Grid item md={1}>

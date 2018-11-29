@@ -21,6 +21,7 @@ import Issue from './issue';
 import {connect} from "react-redux";
 import {fetchIssueList} from "../actions";
 import Grid from "@material-ui/core/Grid/Grid";
+import Dashboard from '@material-ui/icons/Dashboard';
 
 const styles = theme => ({
     root: {
@@ -56,6 +57,10 @@ const styles = theme => ({
         boxShadow: theme.shadows[5],
         padding: theme.spacing.unit,
     },
+    paper:{
+        marginTop: '10px',
+        marginBottom: '20px',
+    }
 });
 
 function getSorting(order, orderBy) {
@@ -73,11 +78,15 @@ class ListIssues extends Component{
             order: 'asc',
             orderBy: 'id',
             page: 0,
-            rowsPerPage: 10,
+            rowsPerPage: 25,
             data: [],
             modalOpen: false,
             modalIssue: null,
-            loading: false
+            modalDepartmentsPointsOpen: false,
+            loading: false,
+            departmentsPoints: [],
+            totalPoints: 0,
+            totalIssues: 0
         };
 
         if (this.props.fetchIssues === "backlog"){
@@ -89,13 +98,49 @@ class ListIssues extends Component{
         if(!this.state.loading && jql !== '' && this.fetchIssues){
             this.setState({ loading: true });
             this.fetchIssues(jql).then(response => {
-                let data;
+                let data, issue,
+                    departmentsPoints = [],
+                    totalPoints = 0,
+                    totalIssues = 0;
+
                 if (this.props.fetchIssues === "backlog"){
                     data = this.props.issue_list;
                 }
+
+                totalIssues = data.length;
+
+                for(let i = 0; i < data.length; i++){
+                    issue = data[i];
+
+                    totalPoints += issue.storyPoints;
+
+                    issue.departments.forEach(department => {
+                        if(!departmentsPoints[department.id]){
+                            departmentsPoints[department.id] = {
+                                id: department.id,
+                                value: department.value,
+                                storyPoints: 0,
+                                pointsAverage: 0,
+                                totalIssues: 0,
+                                totalIssuesAverage: 0
+                            };
+                        }
+                        departmentsPoints[department.id].storyPoints += issue.storyPoints;
+                        departmentsPoints[department.id].pointsAverage +=  Math.round(issue.storyPoints/issue.departments.length);
+                        departmentsPoints[department.id].totalIssues++;
+
+                        if(issue.departments.length === 1){
+                            departmentsPoints[department.id].totalIssuesAverage++;
+                        }
+                    });
+                }
+
                 this.setState({
                     data,
-                    loading: false
+                    loading: false,
+                    departmentsPoints,
+                    totalPoints,
+                    totalIssues
                 });
             }).catch(error => {
                 this.setState({ loading: false });
@@ -147,6 +192,24 @@ class ListIssues extends Component{
             {
                 modalOpen: false,
                 modalIssue: null
+            }
+        );
+    };
+
+    handleClickDepartmentsPointsOpen = () => {
+        if(this.state.departmentsPoints && this.state.departmentsPoints.length > 0){
+            this.setState(
+                {
+                    modalDepartmentsPointsOpen: true,
+                }
+            );
+        }
+    };
+
+    handleModalDepartmentsPointsClose = () => {
+        this.setState(
+            {
+                modalDepartmentsPointsOpen: false,
             }
         );
     };
@@ -204,6 +267,20 @@ class ListIssues extends Component{
             };
         }
 
+        function renderDepartmentPointsRows(departmentsPoints){
+            return departmentsPoints.map(department => {
+                return (
+                    <TableRow hover className={classes.tableRow} key={department.id} >
+                        <TableCell>{department.value}</TableCell>
+                        <TableCell>{department.totalIssues}</TableCell>
+                        <TableCell>{department.totalIssuesAverage}</TableCell>
+                        <TableCell>{department.storyPoints}</TableCell>
+                        <TableCell>{department.pointsAverage}</TableCell>
+                    </TableRow>
+                );
+            });
+        }
+
         return (
             <div>
                 <div>
@@ -215,7 +292,71 @@ class ListIssues extends Component{
                     <div className={classes.title}>
                         <Typography variant="title" id="tableTitle">
                             {this.props.title}
+                            <IconButton
+                                color={"primary"}
+                                onClick={this.handleClickDepartmentsPointsOpen}>
+                                <Dashboard/>
+                            </IconButton>
                         </Typography>
+                        <Modal
+                            aria-labelledby="simple-modal-title2"
+                            aria-describedby="simple-modal-description2"
+                            open={this.state.modalDepartmentsPointsOpen}
+                            onClose={this.handleModalDepartmentsPointsClose}
+                        >
+                            <div style={getModalStyle()} className={classes.modal}>
+                                <Paper className={classes.paper}>
+                                    <Grid container spacing={16}>
+                                        <Grid item sm={6}>
+                                            <Typography variant={"subheading"} align={"center"}>
+                                                Total Documentos: {this.state.totalIssues}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item sm={6}>
+                                            <Typography variant={"subheading"} align={"center"}>
+                                                Total Pontos: {this.state.totalPoints}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                </Paper>
+                                <Paper>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>
+                                                    <Typography variant={"subheading"}>
+                                                        Departamento
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant={"subheading"}>
+                                                        Qtd. Compartilhada
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant={"subheading"}>
+                                                        Qtd. Departamento
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant={"subheading"}>
+                                                        Pontos
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant={"subheading"}>
+                                                        Pontos Rateio
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {renderDepartmentPointsRows(this.state.departmentsPoints)}
+                                        </TableBody>
+                                    </Table>
+                                </Paper>
+                            </div>
+                        </Modal>
                     </div>
                     <div className={classes.spacer} />
                     {/*<Tooltip title="Filtro">*/}
@@ -278,6 +419,7 @@ class ListIssues extends Component{
                         component="div"
                         count={data.length}
                         rowsPerPage={rowsPerPage}
+                        rowsPerPageOptions = {[25,50,100,200]}
                         labelRowsPerPage="Itens por pagina:"
                         page={page}
                         backIconButtonProps={{
