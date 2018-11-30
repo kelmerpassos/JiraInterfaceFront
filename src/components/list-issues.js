@@ -125,12 +125,13 @@ class ListIssues extends Component{
                                 totalIssuesAverage: 0
                             };
                         }
-                        departmentsPoints[department.id].storyPoints += issue.storyPoints;
+
                         departmentsPoints[department.id].pointsAverage +=  Math.round(issue.storyPoints/issue.departments.length);
-                        departmentsPoints[department.id].totalIssues++;
+                        departmentsPoints[department.id].totalIssuesAverage++;
 
                         if(issue.departments.length === 1){
-                            departmentsPoints[department.id].totalIssuesAverage++;
+                            departmentsPoints[department.id].storyPoints += issue.storyPoints;
+                            departmentsPoints[department.id].totalIssues++;
                         }
                     });
                 }
@@ -273,8 +274,8 @@ class ListIssues extends Component{
                     <TableRow hover className={classes.tableRow} key={department.id} >
                         <TableCell>{department.value}</TableCell>
                         <TableCell>{department.totalIssues}</TableCell>
-                        <TableCell>{department.totalIssuesAverage}</TableCell>
                         <TableCell>{department.storyPoints}</TableCell>
+                        <TableCell>{department.totalIssuesAverage}</TableCell>
                         <TableCell>{department.pointsAverage}</TableCell>
                     </TableRow>
                 );
@@ -330,11 +331,6 @@ class ListIssues extends Component{
                                                 </TableCell>
                                                 <TableCell>
                                                     <Typography variant={"subheading"}>
-                                                        Qtd. Compartilhada
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant={"subheading"}>
                                                         Qtd. Departamento
                                                     </Typography>
                                                 </TableCell>
@@ -345,7 +341,12 @@ class ListIssues extends Component{
                                                 </TableCell>
                                                 <TableCell>
                                                     <Typography variant={"subheading"}>
-                                                        Pontos Rateio
+                                                        Qtd. Compartilhada
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant={"subheading"}>
+                                                        Pontos com Rateio
                                                     </Typography>
                                                 </TableCell>
                                             </TableRow>
