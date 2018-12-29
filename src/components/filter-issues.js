@@ -395,6 +395,18 @@ class FilterIssues extends Component {
                                 />
                             </FormControl>
                         </Grid>
+                    </Grid>
+                    <Grid item md={1}>
+                        <Grid item>
+                            <IconButton
+                                color="primary"
+                                className={classes.button}
+                                aria-label="Pesquisa de tickets"
+                                onClick={this.handleFilterChange}
+                            >
+                                <SearchIcon />
+                            </IconButton>
+                        </Grid>	
                         <Grid item>
                             <IconButton
                                 color="primary"
@@ -405,16 +417,6 @@ class FilterIssues extends Component {
                                 <HighlightOff />
                             </IconButton>
                         </Grid>
-                    </Grid>
-                    <Grid item md={1}>
-                        <IconButton
-                            color="primary"
-                            className={classes.button}
-                            aria-label="Pesquisa de tickets"
-                            onClick={this.handleFilterChange}
-                        >
-                            <SearchIcon />
-                        </IconButton>
                     </Grid>
                 </Grid>
             </div>

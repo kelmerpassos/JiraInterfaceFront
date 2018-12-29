@@ -310,7 +310,7 @@ class ListIssues extends Component{
                                     <Grid container spacing={16}>
                                         <Grid item sm={6}>
                                             <Typography variant={"subheading"} align={"center"}>
-                                                Total Documentos: {this.state.totalIssues}
+                                                Qtd. Documentos: {this.state.totalIssues}
                                             </Typography>
                                         </Grid>
                                         <Grid item sm={6}>
