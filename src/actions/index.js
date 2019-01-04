@@ -10,13 +10,39 @@ export const SPRINT_ISSUES = 'sprint_issues',
              ISSUE_ATTACH = 'issue_attach',
              ISSUE_EDITMETA = 'issue_editmeta',
              PRIORITY_LIST = 'priority_list',
-             STATUS_LIST = 'status_list';
+             STATUS_LIST = 'status_list',
+             LOGIN = 'login';
+
+export function sessionLogin(user, password) {
+    const body = {
+            user: user,
+            password: password
+        },
+        request = axios.post(`${ROOT_URL}/login`, body);
+
+    return {
+        type: LOGIN,
+        payload: request
+    };
+}
 
 export function fetchSprintList(boardId) {
 
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
     boardId = boardId ? boardId : BOARD_ID;
 
-    const request = axios.get(`${ROOT_URL}/board/${boardId}/sprint`);
+    const request = axios.get(`${ROOT_URL}/board/${boardId}/sprint`, header);
 
     return {
         type: SPRINTS_LIST,
@@ -25,9 +51,21 @@ export function fetchSprintList(boardId) {
 }
 
 export function fetchSprintIssues(id, filter) {
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
     filter = filter ? `?jql=${filter}` : '';
 
-    const request = axios.get(`${ROOT_URL}/sprint/${id}/issue${filter}`);
+    const request = axios.get(`${ROOT_URL}/sprint/${id}/issue${filter}`, header);
 
     return {
         type: SPRINT_ISSUES,
@@ -37,9 +75,21 @@ export function fetchSprintIssues(id, filter) {
 
 export function fetchIssueList(filter) {
 
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+            headers: {
+                token: login_session ? login_session.token : ''
+            }
+          };
+
     filter = filter ? `?jql=${filter}` : '';
 
-    const request = axios.get(`${ROOT_URL}/issues${filter}`);
+    const request = axios.get(`${ROOT_URL}/issues${filter}`, header);
 
     return {
         type: ISSUES_LIST,
@@ -48,7 +98,19 @@ export function fetchIssueList(filter) {
 }
 
 export function fetchProjectComponents() {
-    const request = axios.get(`${ROOT_URL}/project/${PROJECT_ID}/components`);
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
+    const request = axios.get(`${ROOT_URL}/project/${PROJECT_ID}/components`, header);
 
     return {
         type: PROJECT_COMPONENTS,
@@ -57,7 +119,19 @@ export function fetchProjectComponents() {
 }
 
 export function fetchIssue(key) {
-    const request = axios.get(`${ROOT_URL}/issues/${key}`);
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
+    const request = axios.get(`${ROOT_URL}/issues/${key}`, header);
 
     return {
         type: ISSUE,
@@ -66,9 +140,21 @@ export function fetchIssue(key) {
 }
 
 export function updateIssue(key, issue) {
-    issue.lastUserUpdate = 'Tabajara';
+    let login_session = localStorage.getItem('login_session');
 
-    const request = axios.put(`${ROOT_URL}/issues/${key}`, issue);
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
+    issue.lastUserUpdate = login_session ? login_session.userLogin: '';
+
+    const request = axios.put(`${ROOT_URL}/issues/${key}`, issue, header);
 
     return {
         type: ISSUE_UPDATE,
@@ -77,12 +163,25 @@ export function updateIssue(key, issue) {
 }
 
 export function updateIssueField(key, issue, filed) {
+
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
     let updateIssue = {
             [filed]: issue[filed],
-            lastUserUpdate: 'Tabajara',
+            lastUserUpdate: login_session ? login_session.userLogin: '',
         };
 
-    const request = axios.put(`${ROOT_URL}/issues/${key}`, updateIssue);
+    const request = axios.put(`${ROOT_URL}/issues/${key}`, updateIssue, header);
 
     return {
         type: ISSUE_UPDATE,
@@ -91,7 +190,19 @@ export function updateIssueField(key, issue, filed) {
 }
 
 export function fetchIssueEditMeta() {
-    const request = axios.get(`${ROOT_URL}/issues/${ISSUE_METAKEY}/editmeta`);
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
+    const request = axios.get(`${ROOT_URL}/issues/${ISSUE_METAKEY}/editmeta`, header);
 
     return {
         type: ISSUE_EDITMETA,
@@ -100,10 +211,24 @@ export function fetchIssueEditMeta() {
 }
 
 export function fetchAttachment(key, attach) {
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+
+
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
     const body = {
-          file: attach
+            file: attach
         },
-       request = axios.post(`${ROOT_URL}/issues/${key}/attachment`, body);
+        request = axios.post(`${ROOT_URL}/issues/${key}/attachment`, body, header);
 
     return {
         type: ISSUE_ATTACH,
@@ -112,7 +237,19 @@ export function fetchAttachment(key, attach) {
 }
 
 export function fetchPriorityList() {
-    const request = axios.get(`${ROOT_URL}/priority`);
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
+    const request = axios.get(`${ROOT_URL}/priority`, header);
 
     return {
         type: PRIORITY_LIST,
@@ -121,7 +258,20 @@ export function fetchPriorityList() {
 }
 
 export function fetchStatusList() {
-    const request = axios.get(`${ROOT_URL}/status`);
+
+    let login_session = localStorage.getItem('login_session');
+
+    if(login_session){
+        login_session = JSON.parse(login_session);
+    }
+
+    const header = {
+        headers: {
+            token: login_session ? login_session.token : ''
+        }
+    };
+
+    const request = axios.get(`${ROOT_URL}/status`, header);
 
     return {
         type: STATUS_LIST,
