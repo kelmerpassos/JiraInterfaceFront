@@ -26,6 +26,18 @@ export function sessionLogin(user, password) {
     };
 }
 
+export function sessionLogout(token) {
+    const body = {
+            token: token
+        },
+        request = axios.post(`${ROOT_URL}/logout`, body);
+
+    return {
+        type: LOGIN,
+        payload: request
+    };
+}
+
 export function fetchSprintList(boardId) {
 
     let login_session = localStorage.getItem('login_session');

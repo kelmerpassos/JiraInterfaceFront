@@ -36,7 +36,12 @@ const styles = theme => ({
     root: {
         flexGrow: 1,
         [theme.breakpoints.up('md')]: {
-            width: '1024px',
+            width: '960px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+        },
+        [theme.breakpoints.up('lg')]: {
+            width: '1280px',
             marginLeft: 'auto',
             marginRight: 'auto',
         },
@@ -97,47 +102,84 @@ class Issue extends Component {
         };
     }
 
+    componentWillMount() {
+        let login_session = localStorage.getItem('login_session');
+
+        if(!login_session){
+            this.props.history.push('/login');
+        }
+    }
+
     componentDidMount(){
 
-        let key = this.props.match ? this.props.match.params.key : null;
-        key = this.props.issueObj ? this.props.issueObj.key : key;
+        if (this.state.login_session) {
+            if (this.props.updateAppBar) {
+                this.props.updateAppBar('Documento');
+            }
 
-        if(!this.props.priority_list && this.props.fetchPriorityList){
-            this.props.fetchPriorityList().then(response => {
-                this.setState({ priority_list: this.props.priority_list });
-            });
-        }
+            let key = this.props.match ? this.props.match.params.key : null;
+            key = this.props.issueObj ? this.props.issueObj.key : key;
 
-        if(!this.props.sprint_list && this.props.fetchSprintList){
-            this.props.fetchSprintList().then(response => {
-                this.setState({ sprint_list: this.props.sprint_list });
-            });
-        }
-
-        if(!this.props.productOwners && this.props.fetchIssueEditMeta){
-            this.props.fetchIssueEditMeta().then(response => {
-                this.setState({
-                    departments_list: this.props.departments_list,
-                    productOwners: this.props.productOwners,
-                    requireHomologValues: this.props.requireHomologValues,
+            if (!this.props.priority_list && this.props.fetchPriorityList) {
+                this.props.fetchPriorityList().then(response => {
+                        this.setState({priority_list: this.props.priority_list}
+                    );
+                }).catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/login');
+                    }
                 });
-            });
-        }
+            }
 
-        if(key){
-            this.setState({loading: true});
-            this.props.fetchIssue(key).then(response => {
-                this.setState({
-                    issue: this.props.issue,
-                    originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
-                    loading: false,
+            if (!this.props.sprint_list && this.props.fetchSprintList) {
+                this.props.fetchSprintList().then(response => {
+                    this.setState({sprint_list: this.props.sprint_list});
+                }).catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/login');
+                    }
                 });
-            }).catch(error => {
-                this.setState({loading: false});
-                if(error.response.status !== 401){
-                    alert('Não foi possível realizar a busca das informações');
-                }
-            });
+            }
+
+            if (!this.props.productOwners && this.props.fetchIssueEditMeta) {
+                this.props.fetchIssueEditMeta().then(response => {
+                    this.setState({
+                        departments_list: this.props.departments_list,
+                        productOwners: this.props.productOwners,
+                        requireHomologValues: this.props.requireHomologValues,
+                    });
+                }).catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/login');
+                    }
+                });
+            }
+
+            if (key) {
+                this.setState({loading: true});
+                this.props.fetchIssue(key).then(response => {
+                    this.setState({
+                        issue: this.props.issue,
+                        originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                        loading: false,
+                    });
+                }).catch(error => {
+                    this.setState({loading: false});
+                    if (error.response.status !== 401) {
+                        alert('Não foi possível realizar a busca das informações');
+                    } else {
+                        this.props.history.push('/login');
+                    }
+                });
+            }
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        let login_session = localStorage.getItem('login_session');
+
+        if(!login_session){
+            this.props.history.push('/login');
         }
     }
     

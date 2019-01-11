@@ -143,17 +143,18 @@ class ListIssues extends Component{
                     totalPoints,
                     totalIssues
                 });
+
             }).catch(error => {
                 this.setState({ loading: false });
-                alert("Não foi possível realizar a consulta");
-                console.log("Request error", error);
+                if(error.response.status !== 401) {
+                    alert("Não foi possível realizar a consulta");
+                    console.log("Request error", error);
+                }else{
+                    history.push('/login');
+                }
             });
         }
     };
-
-    componentDidMount(){
-        //this.handleUpdate();
-    }
 
     handleRequestSort = (event, property) => {
         const orderBy = property;
@@ -405,14 +406,14 @@ class ListIssues extends Component{
                         </TableHead>
                         <TableBody>
                             {renderIssues(this)}
-                            {emptyRows > 0 && (
+                            {/*{emptyRows > 0 && (*/}
 
-                                <TableRow style={{ height: 49 * emptyRows }}>
-                                    <TableCell colSpan={6}>
+                                {/*<TableRow style={{ height: 49 * emptyRows }}>*/}
+                                    {/*<TableCell colSpan={6}>*/}
 
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                                    {/*</TableCell>*/}
+                                {/*</TableRow>*/}
+                            {/*)}*/}
 
                         </TableBody>
                     </Table>

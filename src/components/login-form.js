@@ -6,6 +6,8 @@ import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import { sessionLogin } from "../actions";
 import {connect} from "react-redux";
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
 
 const styles = theme => ({
     root: {
@@ -14,10 +16,16 @@ const styles = theme => ({
         marginRight: 'auto',
     },
     button: {
-        margin: theme.spacing.unit,
+        marginTop: theme.spacing.unit*2,
     },
     input: {
-        display: 'none',
+        width: '100%'
+    },
+    paper: {
+        marginTop: theme.spacing.unit * 3,
+        padding: theme.spacing.unit * 3,
+        width: '300px',
+        height: '200px'
     },
 });
 
@@ -30,10 +38,15 @@ class LoginForm extends Component {
         }
     }
 
+    componentDidMount() {
+        this.props.updateAppBar('', false);
+    }
+
     handleClick = (event) => {
         if(this.state.username && this.state.password){
             this.props.sessionLogin(this.state.username, this.state.password).then(response => {
                 localStorage.setItem('login_session', JSON.stringify(this.props.login_session));
+                this.props.updateAppBar('', false, this.props.login_session);
                 this.props.history.push('/');
             }).catch(error =>{
                 localStorage.removeItem('login_session');
@@ -46,35 +59,49 @@ class LoginForm extends Component {
         const { classes } = this.props;
 
         return (
-            <div className={classes.root}>
+            <div>
                 <Grid container spacing={16}>
-                    <Grid item md={3}/>
-                    <Grid container item md={6} justify={"center"}>
-                        <Grid>
-                            <TextField
-                                placeholder={'Usuário Broker'}
-                                id="username"
-                                label="Usuário"
-                                onChange = {(event) => this.setState({username : event.target.value})}
-                            />
-                            <br/>
-                            <TextField
-                                placeholder={'Senha Broker'}
-                                id="password"
-                                type="password"
-                                label="Senha"
-                                onChange = {(event) => this.setState({password : event.target.value})}
-                            />
-                            <br/>
-                            <Button variant="contained" color="primary"
-                                    onClick={this.handleClick}
-                            >
-                                Entrar
-                            </Button>
-                        </Grid>
+                    <Grid item md={1}/>
+                    <Grid container item md={10} justify={"center"}>
+                        <Paper className={classes.paper}>
+                            <Grid container justify={"center"} direction={"column"}>
+                                <Grid item xs>
+                                    <Typography variant="subheading" color={"primary"}>
+                                        <strong>Jira Interface</strong>
+                                    </Typography>
+                                    <TextField
+                                        className={classes.input}
+                                        helperText='Usuário Broker'
+                                        id="username"
+                                        label="Usuário"
+                                        onChange = {(event) => this.setState({username : event.target.value})}
+                                    />
+                                    <br/>
+                                    <TextField
+                                        className={classes.input}
+                                        helperText='Senha Broker'
+                                        id="password"
+                                        type="password"
+                                        label="Senha"
+                                        onChange = {(event) => this.setState({password : event.target.value})}
+                                    />
+                                </Grid>
+                                <Grid item xs justify={"center"} container>
+                                    <Button
+                                        className={classes.button}
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={this.handleClick}
+                                    >
+                                        Entrar
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Paper>
                     </Grid>
-                    <Grid item md={3}/>
+                    <Grid item md={1}/>
                 </Grid>
+
             </div>
         );
     }
