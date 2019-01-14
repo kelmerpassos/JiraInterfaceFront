@@ -10,9 +10,16 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
+import ListIcon from '@material-ui/icons/List';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Menu from "@material-ui/core/Menu";
 import MenuItem from '@material-ui/core/MenuItem';
+import Drawer from '@material-ui/core/Drawer';
+import List from '@material-ui/core/List';
+import Divider from '@material-ui/core/Divider';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import { sessionLogin, sessionLogout } from "./actions";
 import {connect} from "react-redux";
 
@@ -26,6 +33,9 @@ const styles = theme => ({
     },
     userInfo:{
         display: 'inline-block',
+    },
+    list: {
+        width: 250,
     }
 });
 
@@ -46,14 +56,15 @@ class App extends Component {
             login_session: login_session? login_session : props.login_session,
             historyObj: null,
             anchorElUser: null,
-            anchorElMenu: null,
+            sideListOpen: false,
         };
     }
 
-    updateAppBar = ( title, isAppBarVisible = true, login_session = null) =>{
+    updateAppBar = (historyObj, title, isAppBarVisible = true, login_session = null) =>{
         let newState = {
             title,
             isAppBarVisible,
+            historyObj
         };
 
         if(login_session){
@@ -63,16 +74,14 @@ class App extends Component {
         this.setState(newState);
     };
 
-    handleMenuClick = event => {
-        this.setState({ anchorElMenu: event.currentTarget });
+    toggleDrawer = (open) => () => {
+        this.setState({
+            sideListOpen: open,
+        });
     };
 
-    handleMenuClose = (action) => {
-        this.setState({ anchorElMenu: null });
-
-        if(action === 'list'){
-            this.state.historyObj.push('/');
-        }
+    handleListClickIssues = () => {
+        this.state.historyObj.push('/');
     };
 
     handleUserClick = event => {
@@ -89,10 +98,22 @@ class App extends Component {
     };
 
     render () {
-        const { classes, history } = this.props;
-        const { login_session, anchorElUser, anchorElMenu } = this.state;
+        const { classes } = this.props;
+        const { login_session, anchorElUser } = this.state;
         const openUser = Boolean(anchorElUser);
-        const openMenu = Boolean(anchorElMenu);
+
+        const sideList = (
+            <div className={classes.list}>
+                <List component="nav">
+                    <ListItem button onClick={this.handleListClickIssues}>
+                        <ListItemIcon>
+                            <ListIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Lista de Atividades"  />
+                    </ListItem>
+                </List>
+            </div>
+        );
 
         return(
             <div className={classes.root}>
@@ -103,29 +124,20 @@ class App extends Component {
                                 <Toolbar>
                                     <IconButton
                                         color="inherit"
-                                        aria-label="Menu"
-                                        aria-owns={openMenu ? 'menu-appbar' : undefined}
-                                        aria-haspopup="true"
-                                        onClick={this.handleMenuClick}
+                                        onClick={this.toggleDrawer(true)}
                                     >
                                         <MenuIcon/>
                                     </IconButton>
-                                    <Menu
-                                        id="menu-appbar"
-                                        anchorEl={anchorElMenu}
-                                        anchorOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'right',
-                                        }}
-                                        transformOrigin={{
-                                            vertical: 'top',
-                                            horizontal: 'right',
-                                        }}
-                                        open={openMenu}
-                                        onClose={this.handleMenuClose}
-                                    >
-                                        <MenuItem onClick={() => this.handleMenuClose('list')}>Lista de Documentos</MenuItem>
-                                    </Menu>
+                                    <Drawer open={this.state.sideListOpen} onClose={this.toggleDrawer(false)}>
+                                        <div
+                                            tabIndex={0}
+                                            role="button"
+                                            onClick={this.toggleDrawer(false)}
+                                            onKeyDown={this.toggleDrawer(false)}
+                                        >
+                                            {sideList}
+                                        </div>
+                                    </Drawer>
                                     <Typography variant="subheading" color="inherit" className={classes.grow}>
                                         {this.state.title}
                                     </Typography>

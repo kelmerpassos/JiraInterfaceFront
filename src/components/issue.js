@@ -9,8 +9,6 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import DoneIcon from '@material-ui/icons/Done';
 import CloseIcon from '@material-ui/icons/Close';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-import RemoveCircleOutline from '@material-ui/icons/RemoveCircleOutline';
 import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
 import { getPropertyName} from '../utils';
@@ -67,7 +65,7 @@ const styles = theme => ({
     },
     blockAttaches:{
         marginBottom: '8px',
-    }
+    },
 });
 
 class Issue extends Component {
@@ -87,7 +85,8 @@ class Issue extends Component {
             priorityHasChange: false,
             prioritySaving: false,
             sprint_list: props.sprint_list,
-            savingSprint: false,
+            sprintHasChange: false,
+            sprintSaving: false,
             departments_list: props.departments_list,
             departmentHasChange: false,
             departmentSaving: false,
@@ -114,7 +113,7 @@ class Issue extends Component {
 
         if (this.state.login_session) {
             if (this.props.updateAppBar) {
-                this.props.updateAppBar('Documento');
+                this.props.updateAppBar(this.props.history, 'Atividade');
             }
 
             let key = this.props.match ? this.props.match.params.key : null;
@@ -184,32 +183,32 @@ class Issue extends Component {
     }
     
     render (){
-        const { classes, theme, history } = this.props;
-        const { issue, originalIssue, priorityHasChange, prioritySaving, savingSprint, requireHomoHasChange,
+        const { classes, history } = this.props;
+        const { issue, originalIssue, priorityHasChange, prioritySaving, sprintHasChange, sprintSaving, requireHomoHasChange,
                 requireHomoSaving, productOwnerHasChange, productOwnerSaving, departmentHasChange,
                 departmentSaving, login_session} = this.state;
+
+        function renderAttachment(callFunc, issue, listAttach) {
+            return !issue || !listAttach ? '' : listAttach.map(attach => {
+                    return (
+                        <Grid item sm={12} key={attach.content}>
+                            <a href={'#'} onClick={(event) => {
+                                event.preventDefault();
+                                callFunc(issue.key, attach.content).then(response => {
+                                        window.open(response.payload.data.uri, '_blank');
+                                    }
+                                );
+                            }}>{attach.filename}</a>
+                        </Grid>
+                    );
+                }
+            );
+        }
 
         if (!login_session || !login_session.authenticated){
             history.push('/login');
             return (<div/>);
         }else {
-            function renderAttachment(callFunc, issue, listAttach) {
-                return !issue || !listAttach ? '' : listAttach.map(attach => {
-                        return (
-                            <Grid item sm={12} key={attach.content}>
-                                <a href={'#'} onClick={(event) => {
-                                    event.preventDefault();
-                                    callFunc(issue.key, attach.content).then(response => {
-                                            window.open(response.payload.data.uri, '_blank');
-                                        }
-                                    );
-                                }}>{attach.filename}</a>
-                            </Grid>
-                        );
-                    }
-                );
-            }
-
             return (
                 <div className={classes.root}>
                     <Paper className={classes.paper}>
@@ -440,6 +439,185 @@ class Issue extends Component {
                                     <Grid item sm={12} container spacing={8}>
                                         <Grid item md={4} sm={6} justify={"flex-start"} container>
                                             <Grid>
+                                                <span className={classes.fieldLabel}>Sprint:</span>
+                                                {issue && issue.sprint && !issue.sprint.canEdit ? ' ' + issue.sprint.name : ''}
+                                            </Grid>
+                                            <Grid>
+                                                {issue && issue.sprint && issue.sprint.canEdit && (
+                                                    <SelectComp
+                                                        value={issue.sprint}
+                                                        listValues={this.state.sprint_list ? this.state.sprint_list.futures : []}
+                                                        valueProp={'name'}
+                                                        updateValue={(newValue) => {
+                                                            const changed = originalIssue.sprint.id !== newValue.id;
+
+                                                            issue.sprint.id = newValue.id;
+                                                            issue.sprint.name = newValue.name;
+
+                                                            this.setState({
+                                                                issue: issue,
+                                                                sprintHasChange: changed
+                                                            });
+                                                        }}
+                                                    />)
+                                                }
+                                            </Grid>
+                                            <Grid>
+                                                {
+                                                    sprintHasChange && !sprintSaving && (
+                                                        <MuiThemeProvider theme={themeButton}>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="primary"
+                                                                    size="small"
+                                                                    onClick={event => {
+
+                                                                        this.setState({
+                                                                            sprintSaving: true,
+                                                                        });
+
+                                                                        this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                            getPropertyName(() => this.state.issue.sprint)).then(response => {
+                                                                            this.setState({
+                                                                                sprintHasChange: false,
+                                                                                sprintSaving: false,
+                                                                                originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                            });
+
+                                                                            if (this.props.onIssueChange) {
+                                                                                this.props.onIssueChange(this.state.issue);
+                                                                            }
+                                                                        }).catch(error => {
+                                                                            this.setState({
+                                                                                sprintSaving: false,
+                                                                            });
+                                                                            console.log('Erro ao salvar', error);
+                                                                            alert('Não foi possível salvar as alterações.');
+                                                                        });
+                                                                    }}>
+                                                                <DoneIcon/>
+                                                            </Button>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="secondary"
+                                                                    size="small"
+                                                                    onClick={event => {
+                                                                        issue.sprint.id = originalIssue.sprint.id;
+                                                                        issue.sprint.name = originalIssue.sprint.name;
+
+                                                                        this.setState({
+                                                                            issue: issue,
+                                                                            sprintHasChange: false
+                                                                        });
+                                                                    }}>
+                                                                <CloseIcon/>
+                                                            </Button>
+                                                        </MuiThemeProvider>
+                                                    )
+                                                }
+                                                {
+                                                    sprintSaving && (
+                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
+                                                    )
+                                                }
+                                            </Grid>
+                                        </Grid>
+                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                            <Grid>
+                                                <span className={classes.fieldLabel}>Requer Homologação:</span>
+                                            </Grid>
+                                            <Grid>
+                                                {issue && issue.requireHomologation && (
+                                                    <SelectComp
+                                                        value={issue.requireHomologation}
+                                                        listValues={this.state.requireHomologValues}
+                                                        valueProp={'value'}
+                                                        updateValue={(newValue) => {
+                                                            const changed = originalIssue.requireHomologation.id !== newValue.id;
+
+                                                            issue.requireHomologation.id = newValue.id;
+                                                            issue.requireHomologation.value = newValue.value;
+
+                                                            this.setState({
+                                                                issue: issue,
+                                                                requireHomoHasChange: changed
+                                                            });
+                                                        }}
+                                                    />)
+                                                }
+                                            </Grid>
+                                            <Grid>
+                                                {
+                                                    requireHomoHasChange && !requireHomoSaving && (
+                                                        <MuiThemeProvider theme={themeButton}>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="primary"
+                                                                    size="small"
+                                                                    onClick={event => {
+
+                                                                        this.setState({
+                                                                            requireHomoSaving: true,
+                                                                        });
+
+                                                                        this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                            getPropertyName(() => this.state.issue.requireHomologation)).then(response => {
+                                                                            this.setState({
+                                                                                requireHomoHasChange: false,
+                                                                                requireHomoSaving: false,
+                                                                                originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                            });
+
+                                                                            if (this.props.onIssueChange) {
+                                                                                this.props.onIssueChange(this.state.issue);
+                                                                            }
+                                                                        }).catch(error => {
+                                                                            this.setState({
+                                                                                requireHomoSaving: false,
+                                                                            });
+
+                                                                            console.log('Erro ao salvar', error);
+                                                                            alert('Não foi possível salvar as alterações.');
+                                                                        });
+                                                                    }}>
+                                                                <DoneIcon/>
+                                                            </Button>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="secondary"
+                                                                    size="small"
+                                                                    onClick={event => {
+                                                                        issue.requireHomologation.id = originalIssue.requireHomologation.id;
+                                                                        issue.requireHomologation.value = originalIssue.requireHomologation.value;
+
+                                                                        this.setState({
+                                                                            issue: issue,
+                                                                            requireHomoHasChange: false
+                                                                        });
+                                                                    }}>
+                                                                <CloseIcon/>
+                                                            </Button>
+                                                        </MuiThemeProvider>
+                                                    )
+                                                }
+                                                {
+                                                    requireHomoSaving && (
+                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
+                                                    )
+                                                }
+                                            </Grid>
+                                        </Grid>
+                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                            <Grid>
+                                                <span className={classes.fieldLabel}></span>
+                                            </Grid>
+                                            <Grid>
+
+                                            </Grid>
+                                            <Grid>
+
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item sm={12} container spacing={8}>
+                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                            <Grid>
                                                 <span className={classes.fieldLabel}>Departamento:</span>
                                             </Grid>
                                             <Grid>
@@ -449,6 +627,11 @@ class Issue extends Component {
                                                         value={issue.departments}
                                                         listValues={this.state.departments_list}
                                                         valueProp={'value'}
+                                                        classesExternal={{
+                                                            select: {
+                                                                width: 450,
+                                                            }
+                                                        }}
                                                         updateValue={(value) => {
                                                             let obj = null,
                                                                 i,
@@ -542,187 +725,6 @@ class Issue extends Component {
                                                 }
                                             </Grid>
                                         </Grid>
-                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                            <Grid>
-                                                <span className={classes.fieldLabel}>Sprint:</span>
-                                                {!savingSprint && issue && issue.sprint ? ' ' + issue.sprint.name : ''}
-                                                {
-                                                    !savingSprint && (
-                                                        <MuiThemeProvider theme={themeButton}>
-                                                            {
-                                                                issue && !issue.sprint && (
-                                                                    <Button className={classes.buttonIcon}
-                                                                            color="primary"
-                                                                            size="small"
-                                                                            onClick={event => {
-                                                                                let sprintFuture = this.state.sprint_list.filter(sprint => sprint.canEdit);
-
-                                                                                issue.sprint = sprintFuture.length > 0 ? sprintFuture[0] : null;
-
-                                                                                if (issue.sprint) {
-                                                                                    this.setState({
-                                                                                        savingSprint: true,
-                                                                                    });
-
-                                                                                    this.props.updateIssueField(this.state.issue.key, this.state.issue,
-                                                                                        getPropertyName(() => this.state.issue.sprint)).then(response => {
-                                                                                        this.setState({
-                                                                                            savingSprint: false,
-                                                                                            originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
-                                                                                        });
-
-                                                                                        if (this.props.onIssueChange) {
-                                                                                            this.props.onIssueChange(this.state.issue);
-                                                                                        }
-                                                                                    }).catch(error => {
-                                                                                        this.setState({
-                                                                                            prioritySaving: false,
-                                                                                        });
-
-                                                                                        console.log('Erro ao salvar', error);
-                                                                                        alert('Não foi possível salvar as alterações.');
-                                                                                    });
-                                                                                } else {
-                                                                                    alert('Não há sprint disponível para associar a atividade.');
-                                                                                }
-                                                                            }}>
-                                                                        <AddCircleOutline/>
-                                                                    </Button>
-                                                                )
-                                                            }
-                                                            {
-                                                                issue && issue.sprint && issue.sprint.canEdit && (
-                                                                    <Button className={classes.buttonIcon}
-                                                                            color="secondary"
-                                                                            size="small"
-                                                                            onClick={event => {
-
-                                                                                if (confirm(`Deseja desassociar essa atividade da sprint ${issue.sprint.name}?`)) {
-                                                                                    this.setState({
-                                                                                        savingSprint: true,
-                                                                                    });
-
-                                                                                    issue.sprint.id = null;
-
-                                                                                    this.props.updateIssueField(this.state.issue.key, this.state.issue,
-                                                                                        getPropertyName(() => this.state.issue.sprint)).then(response => {
-                                                                                        issue.sprint = null;
-                                                                                        this.setState({
-                                                                                            savingSprint: false,
-                                                                                            originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
-                                                                                        });
-
-                                                                                        if (this.props.onIssueChange) {
-                                                                                            this.props.onIssueChange(this.state.issue);
-                                                                                        }
-                                                                                    }).catch(error => {
-                                                                                        this.setState({
-                                                                                            savingSprint: false,
-                                                                                            issue: originalIssue,
-                                                                                        });
-
-                                                                                        console.log('Erro ao salvar', error);
-                                                                                        alert('Não foi possível salvar as alterações.');
-                                                                                    });
-                                                                                }
-                                                                            }}>
-                                                                        <RemoveCircleOutline/>
-                                                                    </Button>
-                                                                )
-                                                            }
-                                                        </MuiThemeProvider>
-                                                    )
-                                                }
-                                                {
-                                                    savingSprint && (
-                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
-                                                    )
-                                                }
-                                            </Grid>
-                                        </Grid>
-                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                            <Grid>
-                                                <span className={classes.fieldLabel}>Requer Homologação:</span>
-                                            </Grid>
-                                            <Grid>
-                                                {issue && issue.requireHomologation && (
-                                                    <SelectComp
-                                                        value={issue.requireHomologation}
-                                                        listValues={this.state.requireHomologValues}
-                                                        valueProp={'value'}
-                                                        updateValue={(newValue) => {
-                                                            const changed = originalIssue.requireHomologation.id !== newValue.id;
-
-                                                            issue.requireHomologation.id = newValue.id;
-                                                            issue.requireHomologation.value = newValue.value;
-
-                                                            this.setState({
-                                                                issue: issue,
-                                                                requireHomoHasChange: changed
-                                                            });
-                                                        }}
-                                                    />)
-                                                }
-                                            </Grid>
-                                            <Grid>
-                                                {
-                                                    requireHomoHasChange && !requireHomoSaving && (
-                                                        <MuiThemeProvider theme={themeButton}>
-                                                            <Button className={classes.buttonIcon}
-                                                                    color="primary"
-                                                                    size="small"
-                                                                    onClick={event => {
-
-                                                                        this.setState({
-                                                                            requireHomoSaving: true,
-                                                                        });
-
-                                                                        this.props.updateIssueField(this.state.issue.key, this.state.issue,
-                                                                            getPropertyName(() => this.state.issue.requireHomologation)).then(response => {
-                                                                            this.setState({
-                                                                                requireHomoHasChange: false,
-                                                                                requireHomoSaving: false,
-                                                                                originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
-                                                                            });
-
-                                                                            if (this.props.onIssueChange) {
-                                                                                this.props.onIssueChange(this.state.issue);
-                                                                            }
-                                                                        }).catch(error => {
-                                                                            this.setState({
-                                                                                requireHomoSaving: false,
-                                                                            });
-
-                                                                            console.log('Erro ao salvar', error);
-                                                                            alert('Não foi possível salvar as alterações.');
-                                                                        });
-                                                                    }}>
-                                                                <DoneIcon/>
-                                                            </Button>
-                                                            <Button className={classes.buttonIcon}
-                                                                    color="secondary"
-                                                                    size="small"
-                                                                    onClick={event => {
-                                                                        issue.requireHomologation.id = originalIssue.requireHomologation.id;
-                                                                        issue.requireHomologation.value = originalIssue.requireHomologation.value;
-
-                                                                        this.setState({
-                                                                            issue: issue,
-                                                                            requireHomoHasChange: false
-                                                                        });
-                                                                    }}>
-                                                                <CloseIcon/>
-                                                            </Button>
-                                                        </MuiThemeProvider>
-                                                    )
-                                                }
-                                                {
-                                                    requireHomoSaving && (
-                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
-                                                    )
-                                                }
-                                            </Grid>
-                                        </Grid>
                                     </Grid>
                                 </Typography>
                             </Grid>
@@ -757,7 +759,7 @@ class Issue extends Component {
                                                         <span>Anexos</span>
                                                     </div>
                                                     <Grid item container spacing={8} className={classes.blockAttaches}>
-                                                        <span className={classes.fieldLabel}>Documento:</span>
+                                                        <span className={classes.fieldLabel}>Atividade:</span>
                                                         {
                                                             renderAttachment(this.props.fetchAttachment, issue, issue ? issue.docAttaches : [])
                                                         }

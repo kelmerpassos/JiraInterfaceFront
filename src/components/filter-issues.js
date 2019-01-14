@@ -146,7 +146,7 @@ class FilterIssues extends Component {
 
         if(key !== '' && !/^(serv-)[0-9]+$/i.test(this.state.key)){
             key = '';
-            alert('Chave de documento inválida. A chave é composta da palavra SERV- seguida por um número.');
+            alert('Chave da Atividade inválida. A chave é composta da palavra SERV- seguida por um número.');
             return '';
         }
 
@@ -231,18 +231,30 @@ class FilterIssues extends Component {
         if(!this.props.departments){
             this.props.fetchIssueEditMeta().then(response => {
                 this.setState({ departments: this.props.departments });
+            }).catch(error => {
+                if (error.response.status === 401) {
+                    this.props.notAuthCall(error);
+                }
             });
         }
 
         if(!this.props.priority_list){
             this.props.fetchPriorityList().then(response => {
                 this.setState({ priority_list: this.props.priority_list });
+            }).catch(error => {
+                if (error.response.status === 401) {
+                    this.props.notAuthCall(error);
+                }
             });
         }
 
         if(!this.props.status_list){
             this.props.fetchStatusList().then(response => {
                 this.setState({ status_list: this.props.status_list });
+            }).catch(error => {
+                if (error.response.status === 401) {
+                    this.props.notAuthCall(error);
+                }
             });
         }
 
@@ -255,6 +267,10 @@ class FilterIssues extends Component {
                    state: 'Aberto'
                 });
                 this.setState({ sprint_list: sprints });
+            }).catch(error => {
+                if (error.response.status === 401) {
+                    this.props.notAuthCall(error);
+                }
             });
         }
     }
@@ -428,6 +444,7 @@ FilterIssues.propTypes = {
     classes: PropTypes.object.isRequired,
     theme: PropTypes.object.isRequired,
     onChangeFilter: PropTypes.func.isRequired,
+    notAuthCall: PropTypes.func.isRequired,
 };
 
 function mapStateToProps({issue_editmeta, priority_list, sprint_list, status_list}) {

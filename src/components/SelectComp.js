@@ -6,7 +6,6 @@ import Select from '@material-ui/core/Select';
 import MenuItem from "@material-ui/core/MenuItem";
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import Input from "@material-ui/core/Input/Input";
 
 const styles = theme => ({
     formControl: {
@@ -141,11 +140,11 @@ class SelectComp extends Component {
     };
 
     render (){
-        const { classes, theme } = this.props;
+        const { classes, classesExternal, theme } = this.props;
 
         return (
             <div>
-                <FormControl className={classes.formControl}>
+                <FormControl className={classesExternal && classesExternal.formControl ? undefined : classes.formControl}>
                     {
                         !this.props.multipleSelection && (
                             <Select
@@ -157,7 +156,9 @@ class SelectComp extends Component {
                                 {/*</MenuItem>*/}
 
                                 {this.props.listValues && (this.props.listValues.map((option, index) => (
-                                    <MenuItem key={index} value={index}>
+                                    <MenuItem
+                                        key={index}
+                                        value={index}>
                                         {option[this.props.valueProp]}
                                     </MenuItem>
                                 )))}
@@ -169,14 +170,19 @@ class SelectComp extends Component {
                         this.props.multipleSelection && (
                             <Select
                                 multiple
-                                className={classes.select}
+                                style={classesExternal ? classesExternal.select : undefined}
+                                className={classesExternal && classesExternal.select ? undefined : classes.select}
                                 value={this.state.selectedValues}
                                 onChange={this.handleChangeMultiSelect}
                                 renderValue={value => value.join(', ')}
                                 MenuProps={MenuProps}
                             >
                                 {this.props.listValues && (this.props.listValues.map((option, index) => (
-                                    <MenuItem className={classes.menuItem} key={index} value={option[this.props.valueProp]}>
+                                    <MenuItem
+                                        style={classesExternal ? classesExternal.menuItem : undefined}
+                                        className={classesExternal && classesExternal.menuItem ? undefined : classes.menuItem}
+                                        key={index}
+                                        value={option[this.props.valueProp]}>
                                         <Checkbox checked={this.state.selectedValues.indexOf(option[this.props.valueProp]) > -1} />
                                         <ListItemText primary={option[this.props.valueProp]} />
                                     </MenuItem>
@@ -192,6 +198,7 @@ class SelectComp extends Component {
 
 SelectComp.propTypes = {
     classes: PropTypes.object.isRequired,
+    classesExternal: PropTypes.object,
     value: PropTypes.any.isRequired,
     listValues: PropTypes.array,
     updateValue: PropTypes.func,

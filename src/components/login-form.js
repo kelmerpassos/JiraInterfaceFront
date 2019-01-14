@@ -39,14 +39,14 @@ class LoginForm extends Component {
     }
 
     componentDidMount() {
-        this.props.updateAppBar('', false);
+        this.props.updateAppBar(this.props.history,'', false);
     }
 
     handleClick = (event) => {
-        if(this.state.username && this.state.password){
+        if(this.state.username && this.state.username !== '' && this.state.password && this.state.password !== ''){
             this.props.sessionLogin(this.state.username, this.state.password).then(response => {
                 localStorage.setItem('login_session', JSON.stringify(this.props.login_session));
-                this.props.updateAppBar('', false, this.props.login_session);
+                this.props.updateAppBar(this.props.history,'', false, this.props.login_session);
                 this.props.history.push('/');
             }).catch(error =>{
                 localStorage.removeItem('login_session');
@@ -75,6 +75,11 @@ class LoginForm extends Component {
                                         id="username"
                                         label="Usuário"
                                         onChange = {(event) => this.setState({username : event.target.value})}
+                                        onKeyUp={ event => {
+                                            if(event.keyCode === 13){
+                                                this.handleClick();
+                                            }
+                                        }}
                                     />
                                     <br/>
                                     <TextField
@@ -84,6 +89,11 @@ class LoginForm extends Component {
                                         type="password"
                                         label="Senha"
                                         onChange = {(event) => this.setState({password : event.target.value})}
+                                        onKeyUp={ event => {
+                                            if(event.keyCode === 13){
+                                                this.handleClick();
+                                            }
+                                        }}
                                     />
                                 </Grid>
                                 <Grid item xs justify={"center"} container>

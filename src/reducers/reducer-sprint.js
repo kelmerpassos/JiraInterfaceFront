@@ -4,6 +4,9 @@ export function SprintListReducer (state = null, action) {
     switch (action.type){
         case SPRINTS_LIST:
             if(action.payload.data){
+
+                action.payload.data.futures = action.payload.data.filter(sprint => sprint.canEdit);
+
                 return action.payload.data;
             }
             return state;

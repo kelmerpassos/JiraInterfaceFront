@@ -22,6 +22,7 @@ import {connect} from "react-redux";
 import {fetchIssueList} from "../actions";
 import Grid from "@material-ui/core/Grid/Grid";
 import Dashboard from '@material-ui/icons/Dashboard';
+import { Link } from 'react-router-dom';
 
 const styles = theme => ({
     root: {
@@ -150,7 +151,7 @@ class ListIssues extends Component{
                     alert("Não foi possível realizar a consulta");
                     console.log("Request error", error);
                 }else{
-                    history.push('/login');
+                    this.props.notAuthCall(error);
                 }
             });
         }
@@ -241,7 +242,7 @@ class ListIssues extends Component{
                     return(
                         <TableRow hover className={classes.tableRow} key={issue.key} >
                             <TableCell component="th" scope="row">
-                                <a href={`/issue/${issue.key}`} target={'_blank'}> {issue.key}</a>
+                                <Link to={`/issue/${issue.key}`}> {issue.key}</Link>
                             </TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupDepartments}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.issuetype}</TableCell>
@@ -288,6 +289,7 @@ class ListIssues extends Component{
                 <div>
                     <FilterIssues
                         onChangeFilter={this.handleUpdate}
+                        notAuthCall={this.props.notAuthCall}
                     />
                 </div>
                 <Toolbar>
@@ -311,7 +313,7 @@ class ListIssues extends Component{
                                     <Grid container spacing={16}>
                                         <Grid item sm={6}>
                                             <Typography variant={"subheading"} align={"center"}>
-                                                Qtd. Documentos: {this.state.totalIssues}
+                                                Qtd. Atividades: {this.state.totalIssues}
                                             </Typography>
                                         </Grid>
                                         <Grid item sm={6}>
@@ -460,6 +462,7 @@ ListIssues.propTypes = {
     classes: PropTypes.object.isRequired,
     fetchIssues: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
+    notAuthCall: PropTypes.func.isRequired,
 };
 
 function mapStateToProps({issue_list}) {

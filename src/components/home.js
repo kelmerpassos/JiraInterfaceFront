@@ -22,7 +22,7 @@ class Home extends Component {
         }
 
         this.state = {
-            login_session: login_session? login_session : props.login_session
+            login_session: props.login_session ? props.login_session : login_session
         };
     }
 
@@ -43,11 +43,11 @@ class Home extends Component {
     }
 
     componentDidMount() {
-        this.props.updateAppBar('Lista de Documentos');
+        this.props.updateAppBar(this.props.history, 'Lista de Atividades');
     }
 
     render (){
-        const { classes, theme, history } = this.props;
+        const { classes, history } = this.props;
 
         if (!this.state.login_session || !this.state.login_session.authenticated){
             history.push('/login');
@@ -57,7 +57,10 @@ class Home extends Component {
                 <div className={classes.root}>
                     <ListIssues
                         fetchIssues="backlog"
-                        title="Documentos"
+                        title="Atividades"
+                        notAuthCall={(error) => {
+                            this.props.history.push('/login');
+                        }}
                     />
                 </div>
             );
