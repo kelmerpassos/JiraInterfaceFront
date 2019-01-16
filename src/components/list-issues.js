@@ -22,6 +22,8 @@ import {connect} from "react-redux";
 import {fetchIssueList} from "../actions";
 import Grid from "@material-ui/core/Grid/Grid";
 import Dashboard from '@material-ui/icons/Dashboard';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import { Link } from 'react-router-dom';
 
 const styles = theme => ({
@@ -86,8 +88,10 @@ class ListIssues extends Component{
             modalDepartmentsPointsOpen: false,
             loading: false,
             departmentsPoints: [],
+            productOwnersPoints: [],
             totalPoints: 0,
-            totalIssues: 0
+            totalIssues: 0,
+            tabValue: 0,
         };
 
         if (this.props.fetchIssues === "backlog"){
@@ -101,6 +105,7 @@ class ListIssues extends Component{
             this.fetchIssues(jql).then(response => {
                 let data, issue,
                     departmentsPoints = [],
+                    productOwnersPoints = [],
                     totalPoints = 0,
                     totalIssues = 0;
 
@@ -114,6 +119,18 @@ class ListIssues extends Component{
                     issue = data[i];
 
                     totalPoints += issue.storyPoints;
+
+                    if(!productOwnersPoints[issue.productOwner.id]){
+                        productOwnersPoints[issue.productOwner.id] = {
+                            id: issue.productOwner.id,
+                            value: issue.productOwner.value,
+                            storyPoints: 0,
+                            totalIssues: 0,
+                        };
+                    }
+
+                    productOwnersPoints[issue.productOwner.id].totalIssues++;
+                    productOwnersPoints[issue.productOwner.id].storyPoints += issue.storyPoints;
 
                     issue.departments.forEach(department => {
                         if(!departmentsPoints[department.id]){
@@ -141,6 +158,7 @@ class ListIssues extends Component{
                     data,
                     loading: false,
                     departmentsPoints,
+                    productOwnersPoints,
                     totalPoints,
                     totalIssues
                 });
@@ -217,11 +235,14 @@ class ListIssues extends Component{
         );
     };
 
+    handleTabChange = (event, tabValue) => {
+        this.setState({ tabValue });
+    };
+
     render (){
 
         const { classes } = this.props;
-        const { data, order, orderBy, rowsPerPage, page, loading } = this.state;
-        const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+        const { data, order, orderBy, rowsPerPage, page, loading, tabValue } = this.state;
 
         const columnData = [
             { id: 'id', numeric: false, disablePadding: false, label: 'Chave' },
@@ -268,6 +289,18 @@ class ListIssues extends Component{
                 transform: `translate(-${top}%, -${left}%)`,
                 overflowY: 'auto',
             };
+        }
+
+        function renderProductOwnersPointsRows(productOwnersPoints){
+            return productOwnersPoints.map(productOwner => {
+                return (
+                    <TableRow hover className={classes.tableRow} key={productOwner.id} >
+                        <TableCell>{productOwner.value}</TableCell>
+                        <TableCell>{productOwner.totalIssues}</TableCell>
+                        <TableCell>{productOwner.storyPoints}</TableCell>
+                    </TableRow>
+                );
+            });
         }
 
         function renderDepartmentPointsRows(departmentsPoints){
@@ -324,40 +357,82 @@ class ListIssues extends Component{
                                     </Grid>
                                 </Paper>
                                 <Paper>
-                                    <Table>
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>
-                                                    <Typography variant={"subheading"}>
-                                                        Departamento
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant={"subheading"}>
-                                                        Qtd. Departamento
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant={"subheading"}>
-                                                        Pontos
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant={"subheading"}>
-                                                        Qtd. Compartilhada
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant={"subheading"}>
-                                                        Pontos com Rateio
-                                                    </Typography>
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {renderDepartmentPointsRows(this.state.departmentsPoints)}
-                                        </TableBody>
-                                    </Table>
+                                    <Tabs
+                                        value={tabValue}
+                                        indicatorColor="primary"
+                                        textColor="primary"
+                                        onChange={this.handleTabChange}
+                                    >
+                                        <Tab label="Departamento" />
+                                        <Tab label="Product Owner" />
+                                    </Tabs>
+                                    {
+                                        tabValue === 0 && (
+                                            <Table>
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Departamento
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Qtd. Departamento
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Pontos
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Qtd. Compartilhada
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Pontos com Rateio
+                                                            </Typography>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {renderDepartmentPointsRows(this.state.departmentsPoints)}
+                                                </TableBody>
+                                            </Table>
+                                        )
+                                    }
+                                    {
+                                        tabValue === 1 && (
+                                            <Table>
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Product Owner
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Qtd. Atividades
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Typography variant={"subheading"}>
+                                                                Pontos
+                                                            </Typography>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {renderProductOwnersPointsRows(this.state.productOwnersPoints)}
+                                                </TableBody>
+                                            </Table>
+                                        )
+                                    }
+
                                 </Paper>
                             </div>
                         </Modal>
