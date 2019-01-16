@@ -47,7 +47,16 @@ class LoginForm extends Component {
             this.props.sessionLogin(this.state.username, this.state.password).then(response => {
                 localStorage.setItem('login_session', JSON.stringify(this.props.login_session));
                 this.props.updateAppBar(this.props.history,'', false, this.props.login_session);
-                this.props.history.push('/');
+
+                let prevPath = JSON.parse(localStorage.getItem('prevPath'));
+
+                if(prevPath && prevPath.pathname.includes('issue/SERV')){
+                    this.props.history.push(prevPath);
+                }else{
+                    localStorage.removeItem('prevPath');
+                    this.props.history.push('/');
+                }
+
             }).catch(error =>{
                 localStorage.removeItem('login_session');
                 alert(error.response.data.message);

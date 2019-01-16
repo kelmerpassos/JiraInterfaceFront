@@ -109,6 +109,10 @@ class Issue extends Component {
         }
     }
 
+    componentWillUnmount() {
+        localStorage.setItem('prevPath', JSON.stringify(this.props.location));
+    }
+
     componentDidMount(){
 
         if (this.state.login_session) {

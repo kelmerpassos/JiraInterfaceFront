@@ -93,6 +93,7 @@ class App extends Component {
 
         if(action === 'exit'){
             localStorage.removeItem('login_session');
+            localStorage.removeItem('prevPath');
             this.props.sessionLogout(this.state.login_session.token);
         }
     };
