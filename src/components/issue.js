@@ -443,7 +443,7 @@ class Issue extends Component {
                                                 {issue && issue.sprint && !issue.sprint.canEdit ? ' ' + issue.sprint.name : ''}
                                             </Grid>
                                             <Grid>
-                                                {issue && issue.sprint && issue.sprint.canEdit && (
+                                                {issue && (issue.sprint ? issue.sprint.canEdit : true) && (
                                                     <SelectComp
                                                         value={issue.sprint}
                                                         listValues={this.state.sprint_list ? this.state.sprint_list.futures : []}

@@ -12,6 +12,14 @@ export function IssueReducer (state = null, action) {
                     action.payload.data.solution_test = action.payload.data.solution_test.replace(/\/browse/gi,'/issue');
                 }
 
+                if(!action.payload.data.sprint){
+                    action.payload.data.sprint = {
+                        id: null,
+                        name: 'Sem Sprint',
+                        canEdit: true
+                    }
+                }
+
                 action.payload.data.infoAttaches = [];
                 action.payload.data.docAttaches = [];
                 action.payload.data.manualAttaches = [];

@@ -5,6 +5,16 @@ export function SprintListReducer (state = null, action) {
         case SPRINTS_LIST:
             if(action.payload.data){
 
+                const noSprint = action.payload.data.filter(sprint => sprint.id === null);
+
+                if(!noSprint[0]){
+                    action.payload.data.push({
+                        id: null,
+                        name: 'Sem Sprint',
+                        canEdit: true
+                    });
+                }
+
                 action.payload.data.futures = action.payload.data.filter(sprint => sprint.canEdit);
 
                 return action.payload.data;
