@@ -72,6 +72,66 @@ function getSorting(order, orderBy) {
         : (a, b) => (a[orderBy] < b[orderBy] ? -1 : 1);
 }
 
+function countIssues(data) {
+    let total = {
+            departmentsPoints: [],
+            productOwnersPoints: [],
+            totalPoints: 0,
+            totalIssues: 0,
+            selectedProductOwner: null,
+        },
+        issue;
+
+    total.totalIssues = data.length;
+
+    for(let i = 0; i < data.length; i++){
+        issue = data[i];
+
+        total.totalPoints += issue.storyPoints;
+
+        if(!total.selectedProductOwner){
+            total.selectedProductOwner = issue.productOwner.id;
+        }
+
+        if(!total.productOwnersPoints[issue.productOwner.id]){
+            total.productOwnersPoints[issue.productOwner.id] = {
+                id: issue.productOwner.id,
+                value: issue.productOwner.value,
+                storyPoints: 0,
+                totalIssues: 0,
+                issues: [],
+            };
+        }
+
+        total.productOwnersPoints[issue.productOwner.id].totalIssues++;
+        total.productOwnersPoints[issue.productOwner.id].storyPoints += issue.storyPoints;
+        total.productOwnersPoints[issue.productOwner.id].issues.push(issue);
+
+        issue.departments.forEach(department => {
+            if(!total.departmentsPoints[department.id]){
+                total.departmentsPoints[department.id] = {
+                    id: department.id,
+                    value: department.value,
+                    storyPoints: 0,
+                    pointsAverage: 0,
+                    totalIssues: 0,
+                    totalIssuesAverage: 0
+                };
+            }
+
+            total.departmentsPoints[department.id].pointsAverage +=  Math.round(issue.storyPoints/issue.departments.length);
+            total.departmentsPoints[department.id].totalIssuesAverage++;
+
+            if(issue.departments.length === 1){
+                total.departmentsPoints[department.id].storyPoints += issue.storyPoints;
+                total.departmentsPoints[department.id].totalIssues++;
+            }
+        });
+    }
+
+    return total;
+}
+
 class ListIssues extends Component{
 
     constructor(props) {
@@ -89,6 +149,7 @@ class ListIssues extends Component{
             loading: false,
             departmentsPoints: [],
             productOwnersPoints: [],
+            selectedProductOwner: null,
             totalPoints: 0,
             totalIssues: 0,
             tabValue: 0,
@@ -103,7 +164,8 @@ class ListIssues extends Component{
 
     componentDidMount() {
 
-        let data = this.props.issue_list;
+        let data = this.props.issue_list,
+            total;
 
         if(!this.props.issue_list){
             data = localStorage.getItem('issue_list');
@@ -113,8 +175,15 @@ class ListIssues extends Component{
             }
         }
 
+        total = countIssues(data);
+
         this.setState({
-            data
+            data,
+            departmentsPoints: total.departmentsPoints,
+            productOwnersPoints: total.productOwnersPoints,
+            totalPoints: total.totalPoints,
+            totalIssues: total.totalIssues,
+            selectedProductOwner: total.selectedProductOwner,
         });
     }
 
@@ -122,64 +191,22 @@ class ListIssues extends Component{
         if(!this.state.loading && jql !== '' && this.fetchIssues){
             this.setState({ loading: true });
             this.fetchIssues(jql).then(response => {
-                let data, issue,
-                    departmentsPoints = [],
-                    productOwnersPoints = [],
-                    totalPoints = 0,
-                    totalIssues = 0;
+                let data, total;
 
                 if (this.props.fetchIssues === "backlog"){
                     data = this.props.issue_list;
                 }
 
-                totalIssues = data.length;
-
-                for(let i = 0; i < data.length; i++){
-                    issue = data[i];
-
-                    totalPoints += issue.storyPoints;
-
-                    if(!productOwnersPoints[issue.productOwner.id]){
-                        productOwnersPoints[issue.productOwner.id] = {
-                            id: issue.productOwner.id,
-                            value: issue.productOwner.value,
-                            storyPoints: 0,
-                            totalIssues: 0,
-                        };
-                    }
-
-                    productOwnersPoints[issue.productOwner.id].totalIssues++;
-                    productOwnersPoints[issue.productOwner.id].storyPoints += issue.storyPoints;
-
-                    issue.departments.forEach(department => {
-                        if(!departmentsPoints[department.id]){
-                            departmentsPoints[department.id] = {
-                                id: department.id,
-                                value: department.value,
-                                storyPoints: 0,
-                                pointsAverage: 0,
-                                totalIssues: 0,
-                                totalIssuesAverage: 0
-                            };
-                        }
-
-                        departmentsPoints[department.id].pointsAverage +=  Math.round(issue.storyPoints/issue.departments.length);
-                        departmentsPoints[department.id].totalIssuesAverage++;
-
-                        if(issue.departments.length === 1){
-                            departmentsPoints[department.id].storyPoints += issue.storyPoints;
-                            departmentsPoints[department.id].totalIssues++;
-                        }
-                    });
-                }
+                total = countIssues(data);
 
                 this.setState({
                     data,
                     loading: false,
-                    departmentsPoints,
-                    productOwnersPoints,
-                    totalPoints,
-                    totalIssues
+                    departmentsPoints: total.departmentsPoints,
+                    productOwnersPoints: total.productOwnersPoints,
+                    totalPoints: total.totalPoints,
+                    totalIssues: total.totalIssues,
+                    selectedProductOwner: total.selectedProductOwner,
                 });
 
             }).catch(error => {
@@ -310,13 +337,35 @@ class ListIssues extends Component{
             };
         }
 
-        function renderProductOwnersPointsRows(productOwnersPoints){
+        function renderProductOwnersPointsRows(productOwnersPoints, self){
             return productOwnersPoints.map(productOwner => {
+
                 return (
-                    <TableRow hover className={classes.tableRow} key={productOwner.id} >
+                    <TableRow hover className={classes.tableRow}
+                              key={productOwner.id}
+                              onClick={() => {
+                                  self.setState({
+                                      selectedProductOwner: productOwner.id
+                                  })
+                              }}
+                    >
                         <TableCell>{productOwner.value}</TableCell>
                         <TableCell>{productOwner.totalIssues}</TableCell>
                         <TableCell>{productOwner.storyPoints}</TableCell>
+                    </TableRow>
+                );
+            });
+        }
+
+        function renderProductOwnersIssuesRows(issueList, self){
+            return issueList[self.state.selectedProductOwner].issues.map(issue => {
+                return (
+                    <TableRow hover className={classes.tableRow} key={issue.key} >
+                        <TableCell component="th" scope="row">
+                            <Link to={`/issue/${issue.key}`}> {issue.key}</Link>
+                        </TableCell>
+                        <TableCell>{issue.summary}</TableCell>
+                        <TableCell>{issue.storyPoints}</TableCell>
                     </TableRow>
                 );
             });
@@ -425,30 +474,60 @@ class ListIssues extends Component{
                                     }
                                     {
                                         tabValue === 1 && (
-                                            <Table>
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell>
-                                                            <Typography variant={"subheading"}>
-                                                                Product Owner
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant={"subheading"}>
-                                                                Qtd. Atividades
-                                                            </Typography>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Typography variant={"subheading"}>
-                                                                Pontos
-                                                            </Typography>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {renderProductOwnersPointsRows(this.state.productOwnersPoints)}
-                                                </TableBody>
-                                            </Table>
+                                            <Grid container spacing={16}>
+                                                <Grid item md={6}>
+                                                    <Table>
+                                                        <TableHead>
+                                                            <TableRow>
+                                                                <TableCell>
+                                                                    <Typography variant={"subheading"}>
+                                                                        Product Owner
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Typography variant={"subheading"}>
+                                                                        Qtd. Atividades
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Typography variant={"subheading"}>
+                                                                        Pontos
+                                                                    </Typography>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        </TableHead>
+                                                        <TableBody>
+                                                            {renderProductOwnersPointsRows(this.state.productOwnersPoints, this)}
+                                                        </TableBody>
+                                                    </Table>
+                                                </Grid>
+                                                <Grid item md={6} >
+                                                    <Table>
+                                                        <TableHead>
+                                                            <TableRow>
+                                                                <TableCell>
+                                                                    <Typography variant={"subheading"}>
+                                                                        Chave
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Typography variant={"subheading"}>
+                                                                        Resumo
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Typography variant={"subheading"}>
+                                                                        Pontos
+                                                                    </Typography>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        </TableHead>
+                                                        <TableBody>
+                                                            {renderProductOwnersIssuesRows(this.state.productOwnersPoints, this)}
+                                                        </TableBody>
+                                                    </Table>
+                                                </Grid>
+                                            </Grid>
                                         )
                                     }
 

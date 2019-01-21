@@ -34,7 +34,7 @@ const styles = theme => ({
     root: {
         flexGrow: 1,
         [theme.breakpoints.up('md')]: {
-            width: '960px',
+            width: '1024px',
             marginLeft: 'auto',
             marginRight: 'auto',
         },

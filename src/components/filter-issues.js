@@ -464,7 +464,7 @@ FilterIssues.propTypes = {
 };
 
 function mapStateToProps({issue_editmeta, priority_list, sprint_list, status_list}) {
-    return { departments: issue_editmeta ? issue_editmeta.departments : null,
+    return { departments: issue_editmeta.departments,
              priority_list,
              sprint_list,
              status_list,

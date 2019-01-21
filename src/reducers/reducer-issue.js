@@ -89,7 +89,7 @@ export function IssueListReducer (state = null, action) {
     }
 }
 
-export function IssueEditMetaReducer (state = null, action) {
+export function IssueEditMetaReducer (state = {}, action) {
     switch (action.type){
         case ISSUE_EDITMETA:
             if(action.payload.data){
