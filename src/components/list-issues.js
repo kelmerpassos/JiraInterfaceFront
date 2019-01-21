@@ -164,7 +164,7 @@ class ListIssues extends Component{
 
     componentDidMount() {
 
-        let data = this.props.issue_list,
+        let data = this.props.issue_list ? this.props.issue_list : [],
             total;
 
         if(!this.props.issue_list){
@@ -172,6 +172,8 @@ class ListIssues extends Component{
 
             if(data){
                 data = JSON.parse(data);
+            }else{
+                data = [];  
             }
         }
 
