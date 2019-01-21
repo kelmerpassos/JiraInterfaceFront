@@ -66,7 +66,7 @@ class FilterIssues extends Component {
         super(props);
 
         this.state = {
-            departments:[],
+            departments: props.departments,
             selectedDepartments: [],
             priority_list: props.priority_list,
             selectedPriorities: [],
@@ -75,11 +75,25 @@ class FilterIssues extends Component {
             sprint_list: props.sprint_list,
             selectedSprints: [],
             selectedSprintsID: [],
-            search: '',
+            searchText: '',
             key: '',
         };
 
         this.filter = '';
+
+        let data = localStorage.getItem('issue_filter');
+
+        if(data){
+            data = JSON.parse(data);
+
+            this.state.selectedDepartments = data.selectedDepartments;
+            this.state.selectedPriorities = data.selectedPriorities;
+            this.state.selectedStatus = data.selectedStatus;
+            this.state.selectedSprints = data.selectedSprints;
+            this.state.selectedSprintsID = data.selectedSprintsID;
+            this.state.searchText = data.searchText;
+            this.state.key = data.key;
+        }
     }
 
     handleFilterChange = event => {
@@ -88,11 +102,13 @@ class FilterIssues extends Component {
             sprint = '',
             noSprint = '',
             department = '',
-            search = '',
+            searchText = '',
             key = '',
             filter = '',
             backlogId,
             sprintIdList = this.state.selectedSprintsID.slice(0, this.state.selectedSprintsID.length +1);
+
+        localStorage.setItem('issue_filter', JSON.stringify(this.state));
 
         if(this.state.selectedPriorities.length > 0){
             priority = `priority in (${this.state.selectedPriorities.map(item => `"${item}"`).toString()})`;
@@ -136,8 +152,8 @@ class FilterIssues extends Component {
             department = `Departamento in (${this.state.selectedDepartments.map(item => `"${item}"`).toString()})`;
         }
 
-        if(this.state.search.length > 2){
-            search = `text ~ "${this.state.search}" or SAC ~ "${this.state.search}"`;
+        if(this.state.searchText.length > 2){
+            searchText = `text ~ "${this.state.searchText}" or SAC ~ "${this.state.searchText}"`;
         }
 
         if(this.state.key !== ''){
@@ -161,7 +177,7 @@ class FilterIssues extends Component {
         addFilter(status);
         addFilter(sprint);
         addFilter(department);
-        addFilter(search);
+        addFilter(searchText);
         addFilter(key);
 
         if(filter !== ''){
@@ -204,7 +220,7 @@ class FilterIssues extends Component {
 
     handleSearchChange = event => {
         this.setState({
-            search: event.target.value,
+            searchText: event.target.value,
         });
     };
 
@@ -221,7 +237,7 @@ class FilterIssues extends Component {
             selectedStatus: [],
             selectedSprints: [],
             selectedSprintsID: [],
-            search: '',
+            searchText: '',
             key: '',
         });
     };
@@ -385,7 +401,7 @@ class FilterIssues extends Component {
                                     id="input-search"
                                     label="Pesquisa"
                                     className={classes.textField}
-                                    value={this.state.search}
+                                    value={this.state.searchText}
                                     onChange={this.handleSearchChange}
                                     onKeyUp={ event => {
                                         if(event.keyCode === 13){
@@ -448,7 +464,7 @@ FilterIssues.propTypes = {
 };
 
 function mapStateToProps({issue_editmeta, priority_list, sprint_list, status_list}) {
-    return { departments: issue_editmeta.departments,
+    return { departments: issue_editmeta ? issue_editmeta.departments : null,
              priority_list,
              sprint_list,
              status_list,

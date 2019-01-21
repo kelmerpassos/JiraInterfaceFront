@@ -53,14 +53,12 @@ class LoginForm extends Component {
                     prevPath = JSON.parse(localStorage.getItem('prevPath'));
                 }catch(error){
                     localStorage.removeItem('prevPath');
-                };
-
-                if(prevPath && prevPath.pathname.includes('issue/SERV')){
-                    this.props.history.push(prevPath);
-                }else{
-                    localStorage.removeItem('prevPath');
-                    this.props.history.push('/');
                 }
+
+                prevPath = prevPath && prevPath.pathname.includes('issue/SERV') ? prevPath : '/';
+
+                localStorage.removeItem('prevPath');
+                this.props.history.push(prevPath);
 
             }).catch(error =>{
                 localStorage.removeItem('login_session');

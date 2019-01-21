@@ -68,8 +68,10 @@ export function IssueReducer (state = null, action) {
 export function IssueListReducer (state = null, action) {
     switch (action.type){
         case ISSUES_LIST:
-            if(action.payload.data){
 
+            localStorage.removeItem('issue_list');
+
+            if(action.payload.data){
                 for (let i = 0; i < action.payload.data.length; i++) {
                     action.payload.data[i].groupComponents = action.payload.data[i].components.map((component) =>" "+ component.name).toString();
                     action.payload.data[i].groupDepartments = action.payload.data[i].departments.map((department) =>" "+ department.value).toString();
@@ -77,6 +79,7 @@ export function IssueListReducer (state = null, action) {
                     action.payload.data[i].priorityId = action.payload.data[i].priority ? action.payload.data[i].priority.id : -1;
                 }
 
+                localStorage.setItem('issue_list', JSON.stringify(action.payload.data));
                 return action.payload.data;
             }
 
@@ -86,7 +89,7 @@ export function IssueListReducer (state = null, action) {
     }
 }
 
-export function IssueEditMetaReducer (state = {}, action) {
+export function IssueEditMetaReducer (state = null, action) {
     switch (action.type){
         case ISSUE_EDITMETA:
             if(action.payload.data){

@@ -97,6 +97,25 @@ class ListIssues extends Component{
         if (this.props.fetchIssues === "backlog"){
             this.fetchIssues = this.props.fetchIssueList;
         }
+
+        localStorage.removeItem('prevPath');
+    }
+
+    componentDidMount() {
+
+        let data = this.props.issue_list;
+
+        if(!this.props.issue_list){
+            data = localStorage.getItem('issue_list');
+
+            if(data){
+                data = JSON.parse(data);
+            }
+        }
+
+        this.setState({
+            data
+        });
     }
 
     handleUpdate = (jql = '') => {
