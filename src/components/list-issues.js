@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -21,7 +21,8 @@ import Issue from './issue';
 import {connect} from "react-redux";
 import {fetchIssueList} from "../actions";
 import Grid from "@material-ui/core/Grid/Grid";
-import Dashboard from '@material-ui/icons/Dashboard';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import SvgIcon from '@material-ui/core/SvgIcon';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Link } from 'react-router-dom';
@@ -39,6 +40,12 @@ const styles = theme => ({
         '&:nth-of-type(odd)': {
             backgroundColor: theme.palette.background.default
         }
+    },
+    tableRowSelected: {
+        backgroundColor: theme.palette.primary.main,
+        '& td': {
+            color: theme.palette.background.default,
+        },
     },
     progress: {
         margin: theme.spacing.unit * 2,
@@ -152,7 +159,7 @@ class ListIssues extends Component{
             selectedProductOwner: null,
             totalPoints: 0,
             totalIssues: 0,
-            tabValue: 0,
+            tabValue: 1,
         };
 
         if (this.props.fetchIssues === "backlog"){
@@ -275,6 +282,66 @@ class ListIssues extends Component{
         }
     };
 
+    handleClickExportCSV = () => {
+        let str = '',
+            line = '',
+            issue;
+
+        line += 'Chave;';
+        line += 'Departamento;';
+        line += 'Tipo;';
+        line += 'Resumo;';
+        line += 'Situação;';
+        line += 'Versão de Liberação;';
+        line += 'Pontos;';
+        line += 'Prioridade;';
+        line += 'Sprint;';
+        line += 'Requer Homologação;';
+        line += 'Product Owner;';
+        line += 'SAC;';
+
+        str += line + '\r\n';
+
+        for (let i = 0; i < this.state.data.length; i++) {
+            line = '';
+            issue = this.state.data[i];
+
+            line += issue.key + ';';
+            line += issue.groupDepartments + ';';
+            line += issue.issuetype + ';';
+            line += issue.summary + ';';
+            line += issue.status + ';';
+            line += issue.groupFixVersions + ';';
+            line += issue.storyPoints + ';';
+            line += issue.priority.name + ';';
+            line += issue.sprint.name + ';';
+            line += issue.requireHomologation.value + ';';
+            line += issue.productOwner.value + ';';
+            line += issue.sac ? issue.sac : '' + ';';
+
+            str += line + '\r\n';
+        }
+
+        let exportedFilenmae = 'atividades_jira.csv';
+
+        let blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
+        if (navigator.msSaveBlob) { // IE 10+
+            navigator.msSaveBlob(blob, exportedFilenmae);
+        } else {
+            let link = document.createElement("a");
+            if (link.download !== undefined) { // feature detection
+                // Browsers that support HTML5 download attribute
+                let url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", exportedFilenmae);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    };
+
     handleModalDepartmentsPointsClose = () => {
         this.setState(
             {
@@ -289,7 +356,7 @@ class ListIssues extends Component{
 
     render (){
 
-        const { classes } = this.props;
+        const { classes, theme } = this.props;
         const { data, order, orderBy, rowsPerPage, page, loading, tabValue } = this.state;
 
         const columnData = [
@@ -336,14 +403,26 @@ class ListIssues extends Component{
                 left: `${left}%`,
                 transform: `translate(-${top}%, -${left}%)`,
                 overflowY: 'auto',
+                overflowX: 'hidden',
             };
+        }
+
+        function getProductOwnersPointsStyle(selectedID, currentID){
+            let style = classes.tableRow;
+
+            if(selectedID === currentID){
+                style = classes.tableRowSelected;
+            }
+
+            return style;
         }
 
         function renderProductOwnersPointsRows(productOwnersPoints, self){
             return productOwnersPoints.map(productOwner => {
 
                 return (
-                    <TableRow hover className={classes.tableRow}
+                    <TableRow hover={self.state.selectedProductOwner !== productOwner.id}
+                              className={getProductOwnersPointsStyle(self.state.selectedProductOwner, productOwner.id)}
                               key={productOwner.id}
                               onClick={() => {
                                   self.setState({
@@ -360,7 +439,7 @@ class ListIssues extends Component{
         }
 
         function renderProductOwnersIssuesRows(issueList, self){
-            return issueList[self.state.selectedProductOwner].issues.map(issue => {
+            return issueList[self.state.selectedProductOwner] ? issueList[self.state.selectedProductOwner].issues.map(issue => {
                 return (
                     <TableRow hover className={classes.tableRow} key={issue.key} >
                         <TableCell component="th" scope="row">
@@ -370,7 +449,7 @@ class ListIssues extends Component{
                         <TableCell>{issue.storyPoints}</TableCell>
                     </TableRow>
                 );
-            });
+            }) : <span/>;
         }
 
         function renderDepartmentPointsRows(departmentsPoints){
@@ -399,12 +478,23 @@ class ListIssues extends Component{
                     <div className={classes.title}>
                         <Typography variant="title" id="tableTitle">
                             {this.props.title}
+
                             <IconButton
                                 color={"primary"}
-                                onClick={this.handleClickDepartmentsPointsOpen}>
-                                <Dashboard/>
+                                onClick={this.handleClickDepartmentsPointsOpen}
+                            >
+                                <DashboardIcon/>
+                            </IconButton>
+                            <IconButton
+                                color={"primary"}
+                                onClick={this.handleClickExportCSV}
+                            >
+                                <SvgIcon color={"primary"}>
+                                    <path  d="M14,2L20,8V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2H14M18,20V9H13V4H6V20H18M12,19L8,15H10.5V12H13.5V15H16L12,19Z" />
+                                </SvgIcon>
                             </IconButton>
                         </Typography>
+                        
                         <Modal
                             aria-labelledby="simple-modal-title2"
                             aria-describedby="simple-modal-description2"
@@ -504,30 +594,37 @@ class ListIssues extends Component{
                                                     </Table>
                                                 </Grid>
                                                 <Grid item md={6} >
-                                                    <Table>
-                                                        <TableHead>
-                                                            <TableRow>
-                                                                <TableCell>
-                                                                    <Typography variant={"subheading"}>
-                                                                        Chave
-                                                                    </Typography>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <Typography variant={"subheading"}>
-                                                                        Resumo
-                                                                    </Typography>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <Typography variant={"subheading"}>
-                                                                        Pontos
-                                                                    </Typography>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        </TableHead>
-                                                        <TableBody>
-                                                            {renderProductOwnersIssuesRows(this.state.productOwnersPoints, this)}
-                                                        </TableBody>
-                                                    </Table>
+                                                    <Paper className={classes.paper} style={{
+                                                        maxHeight: '400px',
+                                                        height: '100%',
+                                                        overflowY: 'scroll',
+                                                        overflowX: 'hidden'
+                                                    }}>
+                                                        <Table>
+                                                            <TableHead>
+                                                                <TableRow>
+                                                                    <TableCell>
+                                                                        <Typography variant={"subheading"}>
+                                                                            Chave
+                                                                        </Typography>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <Typography variant={"subheading"}>
+                                                                            Resumo
+                                                                        </Typography>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <Typography variant={"subheading"}>
+                                                                            Pontos
+                                                                        </Typography>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            </TableHead>
+                                                            <TableBody>
+                                                                {renderProductOwnersIssuesRows(this.state.productOwnersPoints, this)}
+                                                            </TableBody>
+                                                        </Table>
+                                                    </Paper>
                                                 </Grid>
                                             </Grid>
                                         )
@@ -646,4 +743,4 @@ function mapStateToProps({issue_list}) {
     };
 }
 
-export default connect(mapStateToProps, { fetchIssueList }) (withStyles(styles)(ListIssues));
+export default connect(mapStateToProps, { fetchIssueList }) (withStyles(styles, { withTheme: true })(ListIssues));
