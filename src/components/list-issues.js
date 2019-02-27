@@ -718,7 +718,13 @@ class ListIssues extends Component{
                         <Issue
                             issueObj={this.state.modalIssue}
                             onIssueChange={(issue) => {
-                                this.state.modalIssue.priority = issue.priority;
+
+                                for(let atr in issue){
+                                    if(issue.hasOwnProperty(atr)){
+                                        this.state.modalIssue[atr] = issue[atr];
+                                    }
+                                }
+
                                 this.setState({data});
                             }}
                         >

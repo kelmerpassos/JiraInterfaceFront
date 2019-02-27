@@ -283,7 +283,7 @@ export function fetchStatusList() {
         }
     };
 
-    const request = axios.get(`${ROOT_URL}/status`, header);
+    const request = axios.get(`${ROOT_URL}/project/${PROJECT_ID}/statuses`, header);
 
     return {
         type: STATUS_LIST,

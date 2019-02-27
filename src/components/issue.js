@@ -101,15 +101,20 @@ class Issue extends Component {
         };
     }
 
-    componentWillMount() {
+    validateSession = () => {
         let login_session = localStorage.getItem('login_session');
 
         if(!login_session){
             this.props.history.push('/login');
         }
+    };
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.validateSession();
     }
 
-    componentWillUnmount() {
+    componentWillMount() {
+        this.validateSession();
         localStorage.setItem('prevPath', JSON.stringify(this.props.location));
     }
 
@@ -175,14 +180,6 @@ class Issue extends Component {
                     }
                 });
             }
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        let login_session = localStorage.getItem('login_session');
-
-        if(!login_session){
-            this.props.history.push('/login');
         }
     }
     
@@ -447,7 +444,7 @@ class Issue extends Component {
                                                 {issue && issue.sprint && !issue.sprint.canEdit ? ' ' + issue.sprint.name : ''}
                                             </Grid>
                                             <Grid>
-                                                {issue && (issue.sprint ? issue.sprint.canEdit : true) && (
+                                                {issue && issue.sprint && (issue.sprint.canEdit ? issue.sprint.canEdit : true) && (
                                                     <SelectComp
                                                         value={issue.sprint}
                                                         listValues={this.state.sprint_list ? this.state.sprint_list.futures : []}
@@ -661,6 +658,8 @@ class Issue extends Component {
                                                             }
 
                                                             issue.departments = value;
+
+                                                            issue.groupDepartments = issue.departments.map((department) =>" "+ department.value).toString();
 
                                                             this.setState({
                                                                 issue: issue,

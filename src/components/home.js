@@ -25,25 +25,26 @@ class Home extends Component {
             login_session: props.login_session ? props.login_session : login_session
         };
     }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    validateSession = () => {
         let login_session = localStorage.getItem('login_session');
 
         if(!login_session){
             this.props.history.push('/login');
         }
+    };
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.validateSession();
     }
 
     componentWillMount() {
-        let login_session = localStorage.getItem('login_session');
-
-        if(!login_session){
-            this.props.history.push('/login');
-        }
+        this.validateSession();
     }
 
     componentDidMount() {
-        this.props.updateAppBar(this.props.history, 'Lista de Atividades');
+        if (this.props.updateAppBar) {
+            this.props.updateAppBar(this.props.history, 'Lista de Atividades');
+        }
     }
 
     render (){
