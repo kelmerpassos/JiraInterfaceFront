@@ -309,15 +309,15 @@ class ListIssues extends Component{
             line += issue.key + ';';
             line += issue.groupDepartments + ';';
             line += issue.issuetype + ';';
-            line += issue.summary + ';';
-            line += issue.status + ';';
+            line += (issue.summary ? issue.summary : '') + ';';
+            line += (issue.status ? issue.status : '') + ';';
             line += issue.groupFixVersions + ';';
-            line += issue.storyPoints + ';';
-            line += issue.priority.name + ';';
-            line += issue.sprint.name + ';';
-            line += issue.requireHomologation.value + ';';
-            line += issue.productOwner.value + ';';
-            line += issue.sac ? issue.sac : '' + ';';
+            line += (issue.storyPoints ? issue.storyPoints : '') + ';';
+            line += (issue.priority ? issue.priority.name : '') + ';';
+            line += (issue.sprint ? issue.sprint.name : '') + ';';
+            line += (issue.requireHomologation ? issue.requireHomologation.value : '') + ';';
+            line += (issue.productOwner ? issue.productOwner.value : '') + ';';
+            line += (issue.sac ? issue.sac : '') + ';';
 
             str += line + '\r\n';
         }
@@ -595,7 +595,7 @@ class ListIssues extends Component{
                                                 </Grid>
                                                 <Grid item md={6} >
                                                     <Paper className={classes.paper} style={{
-                                                        maxHeight: '400px',
+                                                        maxHeight: '369px',
                                                         height: '100%',
                                                         overflowY: 'scroll',
                                                         overflowX: 'hidden'
