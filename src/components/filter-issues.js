@@ -14,7 +14,7 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
 import HighlightOff from '@material-ui/icons/HighlightOff';
-import { fetchPriorityList, fetchSprintList, fetchStatusList, fetchIssueEditMeta } from "../actions";
+import { fetchProjectComponents, fetchPriorityList, fetchSprintList, fetchStatusList, fetchIssueEditMeta } from "../actions";
 
 const styles = theme => ({
     root: {
@@ -66,6 +66,8 @@ class FilterIssues extends Component {
         super(props);
 
         this.state = {
+            components: props.components,
+            selectedComponents: [],
             departments: props.departments,
             selectedDepartments: [],
             priority_list: props.priority_list,
@@ -86,13 +88,14 @@ class FilterIssues extends Component {
         if(data){
             data = JSON.parse(data);
 
-            this.state.selectedDepartments = data.selectedDepartments;
-            this.state.selectedPriorities = data.selectedPriorities;
-            this.state.selectedStatus = data.selectedStatus;
-            this.state.selectedSprints = data.selectedSprints;
-            this.state.selectedSprintsID = data.selectedSprintsID;
-            this.state.searchText = data.searchText;
-            this.state.key = data.key;
+            this.state.selectedComponents = data.selectedComponents ? data.selectedComponents : [];
+            this.state.selectedDepartments = data.selectedDepartments ? data.selectedDepartments : [];
+            this.state.selectedPriorities = data.selectedPriorities ? data.selectedPriorities : [];
+            this.state.selectedStatus = data.selectedStatus ? data.selectedStatus : [];
+            this.state.selectedSprints = data.selectedSprints ? data.selectedSprints : [];
+            this.state.selectedSprintsID = data.selectedSprintsID ? data.selectedSprintsID : [];
+            this.state.searchText = data.searchText ? data.searchText : '';
+            this.state.key = data.key ? data.key : '';
         }
     }
 
@@ -101,6 +104,7 @@ class FilterIssues extends Component {
             status = '',
             sprint = '',
             noSprint = '',
+            component = '',
             department = '',
             searchText = '',
             key = '',
@@ -121,16 +125,6 @@ class FilterIssues extends Component {
         backlogId = sprintIdList.indexOf(-1);
 
         if(backlogId > -1){
-            let noSprintItem = [],
-                item;
-
-            for(let i = 0; i < this.state.sprint_list.length; i++){
-                item = this.state.sprint_list[i];
-                if(sprintIdList.indexOf(item.id) === -1){
-                    noSprintItem.push(item.id);
-                }
-            }
-
             noSprint = `Sprint is EMPTY`;
 
             sprintIdList.splice(backlogId,1);
@@ -146,6 +140,10 @@ class FilterIssues extends Component {
             }
 
             sprint = `(${sprint} ${noSprint})`;
+        }
+
+        if(this.state.selectedComponents.length > 0){
+            component = `component in (${this.state.selectedComponents.map(item => `"${item}"`).toString()})`;
         }
 
         if(this.state.selectedDepartments.length > 0){
@@ -176,6 +174,7 @@ class FilterIssues extends Component {
         addFilter(priority);
         addFilter(status);
         addFilter(sprint);
+        addFilter(component);
         addFilter(department);
         addFilter(searchText);
         addFilter(key);
@@ -186,6 +185,12 @@ class FilterIssues extends Component {
         } else{
             alert('Pelo menos um filtro deve ser informado.');
         }
+    };
+
+    handleComponentChange = event => {
+        this.setState({
+            selectedComponents: event.target.value,
+        });
     };
 
     handleDepartmentChange = event => {
@@ -232,6 +237,7 @@ class FilterIssues extends Component {
 
     handleClearFilterClick = event => {
         this.setState({
+            selectedComponents: [],
             selectedDepartments: [],
             selectedPriorities: [],
             selectedStatus: [],
@@ -243,6 +249,16 @@ class FilterIssues extends Component {
     };
 
     componentDidMount(){
+
+        if(!this.props.components){
+            this.props.fetchProjectComponents().then(response => {
+                this.setState({ components: this.props.components });
+            }).catch(error => {
+                if (error.response.status === 401) {
+                    this.props.notAuthCall(error);
+                }
+            });
+        }
 
         if(!this.props.departments){
             this.props.fetchIssueEditMeta().then(response => {
@@ -397,6 +413,27 @@ class FilterIssues extends Component {
                         </Grid>
                         <Grid item>
                             <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="select-component">Componente</InputLabel>
+                                <Select
+                                    multiple
+                                    className={classes.select}
+                                    value={this.state.selectedComponents}
+                                    onChange={this.handleComponentChange}
+                                    input={<Input id="select-component" />}
+                                    renderValue={selected => selected.join(', ')}
+                                    MenuProps={MenuProps}
+                                >
+                                    { this.state.components && this.state.components.map(component => (
+                                        <MenuItem key={component.id} value={component.name}>
+                                            <Checkbox checked={this.state.selectedComponents.indexOf(component.name) > -1} />
+                                            <ListItemText primary={component.name} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item>
+                            <FormControl className={classes.formControl}>
                                 <TextField
                                     id="input-search"
                                     label="Pesquisa"
@@ -463,13 +500,15 @@ FilterIssues.propTypes = {
     notAuthCall: PropTypes.func.isRequired,
 };
 
-function mapStateToProps({issue_editmeta, priority_list, sprint_list, status_list}) {
-    return { departments: issue_editmeta.departments,
-             priority_list,
-             sprint_list,
-             status_list,
+function mapStateToProps({components, issue_editmeta, priority_list, sprint_list, status_list}) {
+    return {
+        departments: issue_editmeta.departments,
+        priority_list,
+        sprint_list,
+        status_list,
+        components: components,
     };
 }
 
-export default connect(mapStateToProps, { fetchPriorityList, fetchSprintList, fetchStatusList,
+export default connect(mapStateToProps, { fetchProjectComponents, fetchPriorityList, fetchSprintList, fetchStatusList,
                        fetchIssueEditMeta}) (withStyles(styles, { withTheme: true })(FilterIssues));

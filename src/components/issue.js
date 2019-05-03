@@ -20,7 +20,8 @@ import {
     updateIssueField,
     fetchSprintList,
     fetchIssueEditMeta,
-    sessionLogin
+    sessionLogin,
+    fetchProjectComponents
 } from "../actions";
 
 const themeButton = createMuiTheme({
@@ -90,6 +91,9 @@ class Issue extends Component {
             departments_list: props.departments_list,
             departmentHasChange: false,
             departmentSaving: false,
+            components_list: props.components_list,
+            componentHasChange: false,
+            componentSaving: false,
             productOwners: props.productOwners,
             productOwnerHasChange: false,
             productOwnerSaving: false,
@@ -149,6 +153,16 @@ class Issue extends Component {
                 });
             }
 
+            if (!this.props.components_list && this.props.fetchProjectComponents) {
+                this.props.fetchProjectComponents().then(response => {
+                    this.setState({components_list: this.props.components_list});
+                }).catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/login');
+                    }
+                });
+            }
+
             if (!this.props.productOwners && this.props.fetchIssueEditMeta) {
                 this.props.fetchIssueEditMeta().then(response => {
                     this.setState({
@@ -186,8 +200,8 @@ class Issue extends Component {
     render (){
         const { classes, history } = this.props;
         const { issue, originalIssue, priorityHasChange, prioritySaving, sprintHasChange, sprintSaving, requireHomoHasChange,
-                requireHomoSaving, productOwnerHasChange, productOwnerSaving, departmentHasChange,
-                departmentSaving, login_session} = this.state;
+                requireHomoSaving, productOwnerHasChange, productOwnerSaving, departmentHasChange, departmentSaving,
+                componentHasChange, componentSaving, login_session} = this.state;
 
         function renderAttachment(callFunc, issue, listAttach) {
             return !issue || !listAttach ? '' : listAttach.map(attach => {
@@ -604,20 +618,9 @@ class Issue extends Component {
                                                 }
                                             </Grid>
                                         </Grid>
-                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
-                                            <Grid>
-                                                <span className={classes.fieldLabel}></span>
-                                            </Grid>
-                                            <Grid>
-
-                                            </Grid>
-                                            <Grid>
-
-                                            </Grid>
-                                        </Grid>
                                     </Grid>
                                     <Grid item sm={12} container spacing={8}>
-                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                        <Grid item md={6} sm={6} justify={"flex-start"} container>
                                             <Grid>
                                                 <span className={classes.fieldLabel}>Departamento:</span>
                                             </Grid>
@@ -728,6 +731,117 @@ class Issue extends Component {
                                                 }
                                             </Grid>
                                         </Grid>
+                                        <Grid item md={6} sm={6} justify={"flex-start"} container>
+                                            <Grid>
+                                                <span className={classes.fieldLabel}>Componente:</span>
+                                            </Grid>
+                                            <Grid>
+                                                {issue && issue.components && (
+                                                    <SelectComp
+                                                        multipleSelection
+                                                        value={issue.components}
+                                                        listValues={this.state.components_list}
+                                                        valueProp={'name'}
+                                                        classesExternal={{
+                                                            select: {
+                                                                width: 450,
+                                                            }
+                                                        }}
+                                                        updateValue={(value) => {
+                                                            let obj = null,
+                                                                i,
+                                                                changed = value.length !== originalIssue.components.length;
+
+                                                            if (!changed) {
+                                                                for (i = 0; i < originalIssue.components.length; i++) {
+                                                                    obj = value.find((option, index, array) => {
+                                                                        return option.id === originalIssue.components[i].id
+                                                                    });
+
+                                                                    if (obj) {
+                                                                        obj.selected = true;
+                                                                    }
+                                                                }
+
+                                                                for (i = 0; i < value.length; i++) {
+                                                                    changed = !value[i].selected;
+                                                                    if (changed) {
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            issue.components = value;
+
+                                                            issue.groupComponents = issue.components.map((component) =>" "+ component.name).toString();
+
+                                                            this.setState({
+                                                                issue: issue,
+                                                                componentHasChange: changed
+                                                            });
+
+                                                        }}
+                                                    />
+                                                )}
+                                            </Grid>
+                                            <Grid>
+                                                {
+                                                    componentHasChange && !componentSaving && (
+                                                        <MuiThemeProvider theme={themeButton}>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="primary"
+                                                                    size="small"
+                                                                    onClick={event => {
+
+                                                                        this.setState({
+                                                                            componentSaving: true,
+                                                                        });
+
+                                                                        this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                            getPropertyName(() => this.state.issue.components)).then(response => {
+                                                                            this.setState({
+                                                                                componentHasChange: false,
+                                                                                componentSaving: false,
+                                                                                originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                            });
+
+                                                                            if (this.props.onIssueChange) {
+                                                                                this.props.onIssueChange(this.state.issue);
+                                                                            }
+                                                                        }).catch(error => {
+                                                                            this.setState({
+                                                                                componentSaving: false,
+                                                                            });
+
+                                                                            console.log('Erro ao salvar', error);
+                                                                            alert('Não foi possível salvar as alterações.');
+                                                                        });
+                                                                    }}>
+                                                                <DoneIcon/>
+                                                            </Button>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="secondary"
+                                                                    size="small"
+                                                                    onClick={event => {
+                                                                        issue.components = JSON.parse(JSON.stringify(originalIssue.components));
+
+                                                                        this.setState({
+                                                                            issue: issue,
+                                                                            componentHasChange: false,
+                                                                        });
+                                                                    }}>
+                                                                <CloseIcon/>
+                                                            </Button>
+                                                        </MuiThemeProvider>
+                                                    )
+                                                }
+                                                {
+                                                    componentSaving && (
+                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
+                                                    )
+                                                }
+                                            </Grid>
+                                        </Grid>
                                     </Grid>
                                 </Typography>
                             </Grid>
@@ -805,7 +919,7 @@ Issue.propTypes = {
     onIssueChange: PropTypes.func,
 };
 
-function mapStateToProps({issue, priority_list, sprint_list, issue_editmeta, login_session}) {
+function mapStateToProps({issue, priority_list, sprint_list, issue_editmeta, login_session, components}) {
     return {
         issue,
         priority_list,
@@ -815,8 +929,9 @@ function mapStateToProps({issue, priority_list, sprint_list, issue_editmeta, log
         productOwners: issue_editmeta.productOwners,
         requireHomologValues: issue_editmeta.requireHomologValues,
         login_session,
+        components_list: components,
     };
 }
 
 export default connect(mapStateToProps, {fetchIssue, fetchAttachment, fetchPriorityList, updateIssueField, fetchIssueEditMeta,
-                       fetchSprintList, sessionLogin}) (withStyles(styles, { withTheme: true })(Issue));
+                       fetchSprintList, sessionLogin, fetchProjectComponents}) (withStyles(styles, { withTheme: true })(Issue));
