@@ -324,7 +324,7 @@ class ListIssues extends Component{
 
         let exportedFilenmae = 'atividades_jira.csv';
 
-        let blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
+        let blob = new Blob(["\ufeff", str], { type: 'text/csv;charset=utf-8;' });
         if (navigator.msSaveBlob) { // IE 10+
             navigator.msSaveBlob(blob, exportedFilenmae);
         } else {
