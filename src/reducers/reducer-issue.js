@@ -96,6 +96,7 @@ export function IssueEditMetaReducer (state = {}, action) {
                 action.payload.data.departments = action.payload.data['customfield_10040'].allowedValues;
                 action.payload.data.productOwners = action.payload.data['customfield_10036'].allowedValues;
                 action.payload.data.requireHomologValues = action.payload.data['customfield_10037'].allowedValues;
+				action.payload.data.priorityOrderValues = action.payload.data['customfield_10053'].allowedValues;
 
                 return action.payload.data;
             }

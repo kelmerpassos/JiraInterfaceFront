@@ -83,7 +83,7 @@ class LoginForm extends Component {
                                     </Typography>
                                     <TextField
                                         className={classes.input}
-                                        helperText='Usuário Broker'
+                                        helperText='Utilize o Usuário DDBroker'
                                         id="username"
                                         label="Usuário"
                                         onChange = {(event) => this.setState({username : event.target.value})}
@@ -96,7 +96,7 @@ class LoginForm extends Component {
                                     <br/>
                                     <TextField
                                         className={classes.input}
-                                        helperText='Senha Broker'
+                                        helperText='Utilize a Senha Broker'
                                         id="password"
                                         type="password"
                                         label="Senha"

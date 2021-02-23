@@ -295,6 +295,7 @@ class ListIssues extends Component{
         line += 'Versão de Liberação;';
         line += 'Pontos;';
         line += 'Prioridade;';
+								line += 'Ordem da Prioridade;';
         line += 'Sprint;';
         line += 'Requer Homologação;';
         line += 'Product Owner;';
@@ -314,6 +315,7 @@ class ListIssues extends Component{
             line += issue.groupFixVersions + ';';
             line += (issue.storyPoints ? issue.storyPoints : '') + ';';
             line += (issue.priority ? issue.priority.name : '') + ';';
+												line += (issue.priorityOrder ? issue.priorityOrder.value : '') + ';';
             line += (issue.sprint ? issue.sprint.name : '') + ';';
             line += (issue.requireHomologation ? issue.requireHomologation.value : '') + ';';
             line += (issue.productOwner ? issue.productOwner.value : '') + ';';

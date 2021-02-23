@@ -100,6 +100,9 @@ class Issue extends Component {
             requireHomologValues: props.requireHomologValues,
             requireHomoHasChange: false,
             requireHomoSaving: false,
+            priorityOrderValues: props.priorityOrderValues,
+            priorityOrderHasChange: false,
+            priorityOrderSaving: false,            
             loading: false,
             login_session: login_session? login_session : props.login_session,
         };
@@ -169,6 +172,7 @@ class Issue extends Component {
                         departments_list: this.props.departments_list,
                         productOwners: this.props.productOwners,
                         requireHomologValues: this.props.requireHomologValues,
+                        priorityOrderValues: _this2.props.priorityOrderValues
                     });
                 }).catch(error => {
                     if (error.response.status === 401) {
@@ -201,7 +205,7 @@ class Issue extends Component {
         const { classes, history } = this.props;
         const { issue, originalIssue, priorityHasChange, prioritySaving, sprintHasChange, sprintSaving, requireHomoHasChange,
                 requireHomoSaving, productOwnerHasChange, productOwnerSaving, departmentHasChange, departmentSaving,
-                componentHasChange, componentSaving, login_session} = this.state;
+                componentHasChange, componentSaving, priorityOrderSaving, priorityOrderHasChange , login_session} = this.state;
 
         function renderAttachment(callFunc, issue, listAttach) {
             return !issue || !listAttach ? '' : listAttach.map(attach => {
@@ -842,6 +846,89 @@ class Issue extends Component {
                                                 }
                                             </Grid>
                                         </Grid>
+                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                            <Grid>
+                                                <span className={classes.fieldLabel}>Ordem de Prioridade:</span>
+                                            </Grid>
+                                            <Grid>
+                                                {issue && issue.priorityOrder && (
+                                                    <SelectComp
+                                                        value={issue.priorityOrder}
+                                                        listValues={this.state.priorityOrderValues}
+                                                        valueProp={'value'}
+                                                        updateValue={(newValue) => {
+                                                            const changed = originalIssue.priorityOrder.id !== newValue.id;
+
+                                                            issue.priorityOrder.id = newValue.id;
+                                                            issue.priorityOrder.value = newValue.value;
+
+                                                            this.setState({
+                                                                issue: issue,
+                                                                priorityOrderHasChange : changed
+                                                            });
+                                                        }}
+                                                    />)
+                                                }
+                                            </Grid>
+                                            <Grid>
+                                                {
+                                                    priorityOrderHasChange  && !priorityOrderSaving  && (
+                                                        <MuiThemeProvider theme={themeButton}>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="primary"
+                                                                    size="small"
+                                                                    onClick={event => {
+
+                                                                        this.setState({
+                                                                            priorityOrderSaving : true,
+                                                                        });
+
+                                                                        this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                            getPropertyName(() => this.state.issue.priorityOrder)).then(response => {
+                                                                            this.setState({
+                                                                                priorityOrderHasChange : false,
+                                                                                priorityOrderSaving : false,
+                                                                                originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                            });
+
+                                                                            if (this.props.onIssueChange) {
+                                                                                this.props.onIssueChange(this.state.issue);
+                                                                            }
+                                                                        }).catch(error => {
+                                                                            this.setState({
+                                                                                priorityOrderSaving : false,
+                                                                            });
+
+                                                                            console.log('Erro ao salvar', error);
+                                                                            alert('Não foi possível salvar as alterações.');
+                                                                        });
+                                                                    }}>
+                                                                <DoneIcon/>
+                                                            </Button>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="secondary"
+                                                                    size="small"
+                                                                    onClick={event => {
+                                                                        issue.priorityOrder.id = originalIssue.priorityOrder.id;
+                                                                        issue.priorityOrder.value = originalIssue.priorityOrder.value;
+
+                                                                        this.setState({
+                                                                            issue: issue,
+                                                                            priorityOrderHasChange : false
+                                                                        });
+                                                                    }}>
+                                                                <CloseIcon/>
+                                                            </Button>
+                                                        </MuiThemeProvider>
+                                                    )
+                                                }
+                                                {
+                                                    priorityOrderSaving  && (
+                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
+                                                    )
+                                                }
+                                            </Grid>
+                                        </Grid>                                        
                                     </Grid>
                                 </Typography>
                             </Grid>
@@ -928,6 +1015,7 @@ function mapStateToProps({issue, priority_list, sprint_list, issue_editmeta, log
         departments_list: issue_editmeta.departments,
         productOwners: issue_editmeta.productOwners,
         requireHomologValues: issue_editmeta.requireHomologValues,
+        priorityOrderValues: issue_editmeta.priorityOrderValues,
         login_session,
         components_list: components,
     };
