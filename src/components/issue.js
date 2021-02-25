@@ -200,13 +200,30 @@ class Issue extends Component {
             }
         }
     }
+
+    formartData(data){
+        data = data.split("T")[0]
+        let fragments = data.split('-')
+        return `${fragments[2]}/${fragments[1]}/${fragments[0]}`
+    }
     
     render (){
         const { classes, history } = this.props;
         const { issue, originalIssue, priorityHasChange, prioritySaving, sprintHasChange, sprintSaving, requireHomoHasChange,
                 requireHomoSaving, productOwnerHasChange, productOwnerSaving, departmentHasChange, departmentSaving,
                 componentHasChange, componentSaving, priorityOrderSaving, priorityOrderHasChange , login_session} = this.state;
-
+        const columnData = [
+                    { id: 'id', numeric: false, disablePadding: false, label: 'Chave' },
+                    { id: 'groupDepartments', numeric: false, disablePadding: false, label: 'Departamento' },
+                    { id: 'issuetype', numeric: false, disablePadding: false, label: 'Tipo' },
+                    { id: 'summary', numeric: false, disablePadding: false, label: 'Resumo' },
+                    { id: 'status', numeric: false, disablePadding: false, label: 'Situação' },
+                    { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão de Liberação' },
+                    { id: 'storyPoints', numeric: false, disablePadding: false, label: 'Pontos' },
+                    { id: 'priorityId', numeric: false, disablePadding: false, label: 'Prioridade' },
+                    { id: 'sprint', numeric: false, disablePadding: false, label: 'Sprint' },
+                ];
+                
         function renderAttachment(callFunc, issue, listAttach) {
             return !issue || !listAttach ? '' : listAttach.map(attach => {
                     return (
@@ -228,8 +245,9 @@ class Issue extends Component {
             history.push('/login');
             return (<div/>);
         }else {
-            return (
+            return (                
                 <div className={classes.root}>
+                    
                     <Paper className={classes.paper}>
                         <Grid container spacing={16}>
                             <Grid item sm={12}>
@@ -450,7 +468,7 @@ class Issue extends Component {
                                         </Grid>
                                         <Grid item md={4} sm={6} justify={"flex-start"} container>
                                             <Grid>
-                                                <span className={classes.fieldLabel}>SAC:</span>
+                                                <span className={classes.fieldLabel}>RNC:</span>
                                                 {issue && issue.sac ? ' ' + issue.sac : ''}
                                             </Grid>
                                         </Grid>
@@ -620,6 +638,12 @@ class Issue extends Component {
                                                         <CircularProgress style={{marginLeft: '10px'}} size={24}/>
                                                     )
                                                 }
+                                            </Grid>
+                                        </Grid>
+                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
+                                            <Grid>
+                                                <span className={classes.fieldLabel}>Criado:</span>
+                                                {issue && issue.created ? ' ' + this.formartData(issue.created): ''}                                
                                             </Grid>
                                         </Grid>
                                     </Grid>
