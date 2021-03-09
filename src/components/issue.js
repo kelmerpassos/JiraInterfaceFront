@@ -13,6 +13,11 @@ import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
 import { getPropertyName} from '../utils';
 import SelectComp from './SelectComp';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 import {
     fetchIssue,
     fetchAttachment,
@@ -239,6 +244,51 @@ class Issue extends Component {
                     );
                 }
             );
+        }
+
+        function renderLink(issues){
+            return (
+                <Grid item container spacing={8} className={classes.blockAttaches}>  
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>
+                                    <Typography variant={"subheading"}>
+                                        Chave
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant={"subheading"}>
+                                        Resumo
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant={"subheading"}>
+                                        Situação
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {issues.issuelinks.map(link=>{
+                                return (
+                                    <TableRow key={link.id}>
+                                        <TableCell>
+                                            {link.outwardIssue ? link.outwardIssue.key : link.inwardIssue.key}
+                                        </TableCell>
+                                        <TableCell>
+                                            {link.outwardIssue ? link.outwardIssue.fields.summary: link.inwardIssue.fields.summary}
+                                        </TableCell>
+                                        <TableCell>
+                                            {link.outwardIssue ? link.outwardIssue.fields.status.name : link.inwardIssue.fields.status.name}
+                                        </TableCell>
+                                    </TableRow>   
+                                )
+                            })}
+                        </TableBody>
+                    </Table>
+                </Grid>
+            )       
         }
 
         if (!login_session || !login_session.authenticated){
@@ -1010,6 +1060,16 @@ class Issue extends Component {
                                                             renderAttachment(this.props.fetchAttachment, issue, issue ? issue.attachment : [])
                                                         }
                                                     </Grid>
+                                                </Paper>
+                                            </Grid>
+                                            <Grid item md={12}>
+                                                <Paper className={classes.paper}>
+                                                    <div className={classes.labelSubTile}>
+                                                        <span>Itens Relacionandos</span>
+                                                    </div>
+                                                    {
+                                                        this.props.issue.issuelinks ? renderLink( this.props.issue): <div><span>Nenhum SERV relacionado</span></div>
+                                                    }
                                                 </Paper>
                                             </Grid>
                                         </Grid>
