@@ -25,6 +25,9 @@ module.exports = {
     watchOptions: {
       aggregateTimeout: 300,
       poll: 1000
-    }
+    },
+	host: '0.0.0.0',
+	port:3000,
+	disableHostCheck: true,
   }
 };

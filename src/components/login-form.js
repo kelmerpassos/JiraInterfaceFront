@@ -36,6 +36,8 @@ class LoginForm extends Component {
             username:'',
             password:''
         }
+		this.componentDidMount = this.componentDidMount.bind(this);
+		this.handleClick = this.handleClick.bind(this)
     }
 
     componentDidMount() {

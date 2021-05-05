@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from "prop-types";
-import {withStyles, MuiThemeProvider, createMuiTheme} from "@material-ui/core";
+import {withStyles, MuiThemeProvider, createMuiTheme, TextField} from "@material-ui/core";
 import {connect} from "react-redux";
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
@@ -87,6 +87,8 @@ class Issue extends Component {
         this.state = {
             originalIssue: props.issueObj ? JSON.parse(JSON.stringify(props.issueObj)) : null,
             issue : props.issueObj,
+            homologadorHasChange: false,
+            homologadorSaving: false,
             priority_list: props.priority_list,
             priorityHasChange: false,
             prioritySaving: false,
@@ -214,7 +216,7 @@ class Issue extends Component {
     
     render (){
         const { classes, history } = this.props;
-        const { issue, originalIssue, priorityHasChange, prioritySaving, sprintHasChange, sprintSaving, requireHomoHasChange,
+        const { issue, originalIssue, homologadorHasChange, homologadorSaving, priorityHasChange, prioritySaving, sprintHasChange, sprintSaving, requireHomoHasChange,
                 requireHomoSaving, productOwnerHasChange, productOwnerSaving, departmentHasChange, departmentSaving,
                 componentHasChange, componentSaving, priorityOrderSaving, priorityOrderHasChange , login_session} = this.state;
         const columnData = [
@@ -1002,7 +1004,83 @@ class Issue extends Component {
                                                     )
                                                 }
                                             </Grid>
-                                        </Grid>                                        
+                                        </Grid> 
+										<Grid item md={4} sm={6} justify={"flex-start"} container>
+                                            <Grid>
+                                                <span className={classes.fieldLabel}>Homologador:</span>
+                                            </Grid>
+                                            <Grid>
+                                                <TextField 
+                                                    value={issue && issue.homologador ? issue.homologador : ''}
+                                                    onChange={(event) =>{
+                                                        const changed = originalIssue.homologador !== event.target.value
+                                                        issue.homologador = event.target.value
+
+                                                        this.setState({
+                                                            issue: issue,
+                                                            homologadorHasChange: changed
+                                                        })
+                                                    }}
+                                                />
+                                            </Grid>    
+                                            <Grid>
+                                                {
+                                                    homologadorHasChange && !homologadorSaving && (
+                                                        <MuiThemeProvider theme={themeButton}>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="primary"
+                                                                    size="small"
+                                                                    onClick={event => {
+
+                                                                        this.setState({
+                                                                            homologadorSaving: true,
+                                                                        });
+
+                                                                        this.props.updateIssueField(this.state.issue.key, this.state.issue,
+                                                                            getPropertyName(() => this.state.issue.homologador)).then(response => {
+                                                                            this.setState({
+                                                                                homologadorHasChange: false,
+                                                                                homologadorSaving: false,
+                                                                                originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
+                                                                            });
+
+                                                                            if (this.props.onIssueChange) {
+                                                                                this.props.onIssueChange(this.state.issue);
+                                                                            }
+                                                                        }).catch(error => {
+                                                                            this.setState({
+                                                                                homologadorSaving: false,
+                                                                            });
+
+                                                                            console.log('Erro ao salvar', error);
+                                                                            alert('Não foi possível salvar as alterações.');
+                                                                        });
+                                                                    }}>
+                                                                <DoneIcon/>
+                                                            </Button>
+                                                            <Button className={classes.buttonIcon}
+                                                                    color="secondary"
+                                                                    size="small"
+                                                                    onClick={event => {
+                                                                        issue.homologador = originalIssue.homologador;
+                                                                        
+                                                                        this.setState({
+                                                                            issue: issue,
+                                                                            homologadorHasChange: false
+                                                                        });
+                                                                    }}>
+                                                                <CloseIcon/>
+                                                            </Button>
+                                                        </MuiThemeProvider>
+                                                    )
+                                                }
+                                                {
+                                                    homologadorSaving && (
+                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
+                                                    )
+                                                }
+                                            </Grid>            
+                                        </Grid>											
                                     </Grid>
                                 </Typography>
                             </Grid>
