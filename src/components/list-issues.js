@@ -88,7 +88,7 @@ function countIssues(data) {
             selectedProductOwner: null,
         },
         issue;
-
+    
     total.totalIssues = data.length;
 
     for(let i = 0; i < data.length; i++){
@@ -306,7 +306,6 @@ class ListIssues extends Component{
         for (let i = 0; i < this.state.data.length; i++) {
             line = '';
             issue = this.state.data[i];
-
             line += issue.key + ';';
             line += issue.groupDepartments + ';';
             line += issue.issuetype + ';';
@@ -363,14 +362,16 @@ class ListIssues extends Component{
 
         const columnData = [
             { id: 'id', numeric: false, disablePadding: false, label: 'Chave' },
+            { id: 'GLPI', numeric: false, disablePadding: false, label: 'GLPI' },
             { id: 'groupDepartments', numeric: false, disablePadding: false, label: 'Departamento' },
             { id: 'issuetype', numeric: false, disablePadding: false, label: 'Tipo' },
             { id: 'summary', numeric: false, disablePadding: false, label: 'Resumo' },
             { id: 'status', numeric: false, disablePadding: false, label: 'Situação' },
-            { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão de Liberação' },
-            { id: 'storyPoints', numeric: false, disablePadding: false, label: 'Pontos' },
+            { id: 'estimativa', numeric: false, disablePadding: false, label: 'Pontos Estimados' },
+            { id: 'storyPoints', numeric: false, disablePadding: false, label: 'Pontos Planejados' },
             { id: 'priorityId', numeric: false, disablePadding: false, label: 'Prioridade' },
             { id: 'sprint', numeric: false, disablePadding: false, label: 'Sprint' },
+            { id: 'groupFixVersions', numeric: false, disablePadding: false, label: 'Versão de Liberação' },
         ];
 
         function renderIssues(owner){
@@ -382,14 +383,16 @@ class ListIssues extends Component{
                             <TableCell component="th" scope="row">
                                 <Link to={`/issue/${issue.key}`}> {issue.key}</Link>
                             </TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.glpi}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupDepartments}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.issuetype}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.summary}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.status}</TableCell>
-                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupFixVersions}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.estimativa ? issue.estimativa : ''}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.storyPoints ? issue.storyPoints : ''}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.priority ? issue.priority.name : ''}</TableCell>
                             <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.sprint ? issue.sprint.name : ''}</TableCell>
+                            <TableCell onClick={(event) => owner.handleModalOpen(issue)}>{issue.groupFixVersions}</TableCell>
                         </TableRow>
                     );
                 }
