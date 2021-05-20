@@ -531,82 +531,17 @@ class Issue extends Component {
                                                 <span className={classes.fieldLabel}>Sprint:</span>
                                                 {issue && issue.sprint && !issue.sprint.canEdit ? ' ' + issue.sprint.name : ''}
                                             </Grid>
+                                        </Grid>
+                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
                                             <Grid>
-                                                {issue && issue.sprint && issue.sprint.canEdit && (
-                                                    <SelectComp
-                                                        value={issue.sprint}
-                                                        listValues={this.state.sprint_list ? this.state.sprint_list.futures : []}
-                                                        valueProp={'name'}
-                                                        updateValue={(newValue) => {
-                                                            const changed = originalIssue.sprint.id !== newValue.id;
-
-                                                            issue.sprint.id = newValue.id;
-                                                            issue.sprint.name = newValue.name;
-
-                                                            this.setState({
-                                                                issue: issue,
-                                                                sprintHasChange: changed
-                                                            });
-                                                        }}
-                                                    />)
-                                                }
+                                                <span className={classes.fieldLabel}>GLPI #:</span>
+                                                {issue && issue.glpi ? ' ' + issue.glpi : ''}
                                             </Grid>
+                                        </Grid>
+                                        <Grid item md={4} sm={6} justify={"flex-start"} container>
                                             <Grid>
-                                                {
-                                                    sprintHasChange && !sprintSaving && (
-                                                        <MuiThemeProvider theme={themeButton}>
-                                                            <Button className={classes.buttonIcon}
-                                                                    color="primary"
-                                                                    size="small"
-                                                                    onClick={event => {
-
-                                                                        this.setState({
-                                                                            sprintSaving: true,
-                                                                        });
-
-                                                                        this.props.updateIssueField(this.state.issue.key, this.state.issue,
-                                                                            getPropertyName(() => this.state.issue.sprint)).then(response => {
-                                                                            this.setState({
-                                                                                sprintHasChange: false,
-                                                                                sprintSaving: false,
-                                                                                originalIssue: JSON.parse(JSON.stringify(this.props.issue)),
-                                                                            });
-
-                                                                            if (this.props.onIssueChange) {
-                                                                                this.props.onIssueChange(this.state.issue);
-                                                                            }
-                                                                        }).catch(error => {
-                                                                            this.setState({
-                                                                                sprintSaving: false,
-                                                                            });
-                                                                            console.log('Erro ao salvar', error);
-                                                                            alert('Não foi possível salvar as alterações.');
-                                                                        });
-                                                                    }}>
-                                                                <DoneIcon/>
-                                                            </Button>
-                                                            <Button className={classes.buttonIcon}
-                                                                    color="secondary"
-                                                                    size="small"
-                                                                    onClick={event => {
-                                                                        issue.sprint.id = originalIssue.sprint.id;
-                                                                        issue.sprint.name = originalIssue.sprint.name;
-
-                                                                        this.setState({
-                                                                            issue: issue,
-                                                                            sprintHasChange: false
-                                                                        });
-                                                                    }}>
-                                                                <CloseIcon/>
-                                                            </Button>
-                                                        </MuiThemeProvider>
-                                                    )
-                                                }
-                                                {
-                                                    sprintSaving && (
-                                                        <CircularProgress style={{marginLeft: '10px'}} size={24}/>
-                                                    )
-                                                }
+                                                <span className={classes.fieldLabel}>Estimativa de pontos do SERV:</span>
+                                                {issue && issue.estimativa ? ' ' + issue.estimativa : ''}
                                             </Grid>
                                         </Grid>
                                         <Grid item md={4} sm={6} justify={"flex-start"} container>
